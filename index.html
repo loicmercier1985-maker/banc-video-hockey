@@ -438,6 +438,15 @@ button{cursor:pointer}
 .cr-ytrow .inp{flex:1;min-width:0}
 .cr-ytrow .btn{flex:none;width:38px;height:36px;justify-content:center;font-size:18px;padding:0}
 .cr-ytadd{color:var(--blue)}
+.lib-thumb{position:relative;display:block;width:100%;padding:0;border:0;background:#C9D3DA;cursor:pointer;overflow:hidden}
+.lib-thumb canvas{transition:transform .2s ease}
+.lib-go{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%) scale(.92);display:flex;align-items:center;gap:6px;padding:9px 16px;border-radius:999px;background:rgba(15,27,40,.86);color:#fff;font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:.05em;text-transform:uppercase;opacity:0;transition:opacity .18s,transform .18s;pointer-events:none;white-space:nowrap}
+.lib-go svg{width:15px;height:15px;fill:currentColor}
+.lib-thumb:hover .lib-go,.lib-thumb:focus-visible .lib-go{opacity:1;transform:translate(-50%,-50%) scale(1)}
+.lib-thumb:hover canvas{transform:scale(1.03)}
+.lib-thumb:focus-visible{outline:3px solid var(--blue);outline-offset:-3px}
+@media (hover:none){.lib-go{opacity:1;top:auto;bottom:10px;transform:translateX(-50%);font-size:13px;padding:6px 12px}}
+@media (prefers-reduced-motion: reduce){.lib-thumb canvas,.lib-go{transition:none}}
 </style>
 </head>
 <body>
@@ -2175,10 +2184,10 @@ function drawDrillThumb(cv,d){fit(cv);const c=cv.getContext('2d'),W=cv.width,H=c
   c.save();c.beginPath();c.rect(0,0,ox+100.6*k,H);c.clip();c.translate(ox,oy);c.scale(k,k);drawRinkFt(c);c.restore();
   const w=Math.max(1.2,.42*k);d.moves.forEach(m=>drawPath(c,m.k,m.dense.map(px),TR_INK,w,k));
   [...d.tokens.filter(t=>t.k==='cone'),...d.tokens.filter(t=>t.k!=='cone'&&t.k!=='puck'),...d.tokens.filter(t=>t.k==='puck')].forEach(t=>trTok(c,t,px([t.fx,t.fy]),k))}
-function libCard({d,pi}){const cat=TR_CAT[d.cat];return `<article class="lib-card"><canvas data-libth="${d.id}" aria-label="Schéma : ${esc(d.title)}"></canvas>
+function libCard({d,pi}){const cat=TR_CAT[d.cat];return `<article class="lib-card"><button class="lib-thumb" data-libb="${d.id}" title="Ouvrir sur le tableau" aria-label="Ouvrir « ${esc(d.title)} » sur le tableau"><canvas data-libth="${d.id}"></canvas><span class="lib-go"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg>Ouvrir sur le tableau</span></button>
   <div class="lib-body"><div class="lib-meta"><span class="row" style="gap:4px"><span class="tr-cat" style="--c:${cat[1]}">${cat[0]}</span>${d.tag==='5c4'?'<span class="tr-cat lib-tag">5 c 4</span>':''}</span><span class="t">${d.start!=null&&!PRATIQUES[pi].kind?(d.end-d.start)+' min':esc(d.dur||'')}</span></div>
   <h3>${esc(d.title)}</h3><p class="muted">${esc(d.sub)} · ${esc(PRATIQUES[pi].name)}</p>
-  <div class="lib-acts"><button class="btn sm primary" data-libo="${d.id}" data-pi="${pi}">Ouvrir la fiche</button><button class="btn sm" data-libb="${d.id}">Sur le tableau</button>
+  <div class="lib-acts"><button class="btn sm primary" data-libo="${d.id}" data-pi="${pi}">Ouvrir la fiche</button>
   <button class="btn sm" data-libv="${d.id}"${libHasYt(d)?'':' hidden'}><svg viewBox="0 0 24 24"><path d="M4 7h11v10H4zM15 10l5-3v10l-5-3"/></svg>Vidéo</button></div></div></article>`}
 function libRender(){const all=libItems();const q=LIB.q.toLowerCase();const isS=LIB.tab==='skills';
   const pool=all.filter(({d})=>isS?d.lib==='skills':d.lib!=='skills');
@@ -2187,7 +2196,7 @@ function libRender(){const all=libItems();const q=LIB.q.toLowerCase();const isS=
   v.innerHTML=`<div class="lib-wrap"><div class="lib-head"><div><h2 class="lib-title">Librairie de drills</h2>
     <div class="seg lib-tabs" role="tablist"><button role="tab" data-libt="drills" aria-selected="${!isS}" class="${isS?'':'active'}">Drills</button><button role="tab" data-libt="skills" aria-selected="${isS}" class="${isS?'active':''}">Skills</button></div></div>
     ${pool.length?`<input class="inp lib-q" id="libQ" placeholder="Rechercher ${isS?'un skill':'un exercice'}" value="${esc(LIB.q)}" autocomplete="off">`:''}</div>
-    ${isS?`<p class="muted">Exercices axés sur la technique individuelle, créés manuellement.</p>`:`<p class="muted">${pool.length} exercices · ouvrez la fiche, placez le schéma sur le tableau ou regardez la vidéo.</p>`}
+    ${isS?`<p class="muted">Exercices axés sur la technique individuelle, créés manuellement.</p>`:`<p class="muted">${pool.length} exercices · touchez le schéma pour l'ouvrir sur le tableau.</p>`}
     ${pool.length?`<div class="chips">${LIB_CHIPS.filter(([k])=>!k||pool.some(({d})=>k.startsWith('tag:')?d.tag===k.slice(4):d.cat===k)).map(([k,n])=>`<button class="chip${LIB.cat===k?' active':''}" data-libc="${k}">${esc(n)}</button>`).join('')}</div>`:''}
     ${pool.length?`<div class="lib-grid">${list.map(libCard).join('')||'<p class="muted">Aucun exercice pour ce filtre.</p>'}</div>`
       :`<div class="lib-empty"><h3>Aucun skill pour l'instant</h3><p>Dessine l'exercice sur le tableau, puis ajoute-le ici avec sa fiche (bouton ci-dessous, ou « + Ajouter aux Skills » dans les tableaux enregistrés). Maniement, tir, patin, feintes : chacun aura son schéma, ses consignes et sa vidéo.</p><button class="btn primary" id="libToCreate">Ajouter le tableau actuel aux Skills</button></div>`}</div>`;
