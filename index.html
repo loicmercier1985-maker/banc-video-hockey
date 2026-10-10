@@ -433,6 +433,11 @@ button{cursor:pointer}
 .hb-pop .row:first-child{flex-wrap:nowrap}
 .hb-pop .item{flex-wrap:wrap}
 .hb-pop .item .n{flex:1 1 150px;white-space:normal}
+.cr-yts{display:flex;flex-direction:column;gap:6px}
+.cr-ytrow{display:flex;gap:6px;align-items:center}
+.cr-ytrow .inp{flex:1;min-width:0}
+.cr-ytrow .btn{flex:none;width:38px;height:36px;justify-content:center;font-size:18px;padding:0}
+.cr-ytadd{color:var(--blue)}
 </style>
 </head>
 <body>
@@ -609,8 +614,8 @@ button{cursor:pointer}
           <label class="field">Erreurs fréquentes (une par ligne)<textarea class="inp" name="errs" id="crErrs" rows="3"></textarea></label>
           <label class="field">Progression<textarea class="inp" name="prog" id="crProg" rows="2"></textarea></label>
           <label class="field">Matériel<input name="mat" id="crMat" maxlength="120"></label>
-          <label class="field">Vidéo YouTube (lien, facultatif)<input name="yt" id="crYt" placeholder="https://www.youtube.com/watch?v=…"></label>
-          <div class="grid2"><label class="field">Séquence : début (s)<input name="ys" id="crYs" type="number" min="0" step="1"></label><label class="field">Fin (s)<input name="ye" id="crYe" type="number" min="0" step="1"></label></div>
+          <div class="field"><span>Vidéos YouTube (liens, facultatif)</span><div class="cr-yts" id="crYts"></div></div>
+          <div class="grid2"><label class="field">Séquence (1re vidéo) : début (s)<input name="ys" id="crYs" type="number" min="0" step="1"></label><label class="field">Fin (s)<input name="ye" id="crYe" type="number" min="0" step="1"></label></div>
           <div class="row"><button class="btn primary" type="submit">Enregistrer dans la librairie</button></div>
           <div class="cr-saved" id="crSaved" hidden></div>
         </form>
@@ -2101,6 +2106,13 @@ function hbToDrill(){const toks=hbToks(),moves=[];let t=.2;
       else{const mv={k:m.kind,w:m.id,pts,t,d:dur};if(carried[m.id])mv.pk=carried[m.id];moves.push(mv)}});t+=dur}
   return{tokens:toks.map(x=>{const f=crF([x.x,x.y]);return{id:x.id,k:x.k,x:f[0],y:f[1],l:x.k==='g'?'G':(x.l||'')}}),moves}}
 const crYt=u=>{const m=String(u||'').match(/(?:v=|youtu\.be\/|shorts\/|embed\/)([A-Za-z0-9_-]{11})/);return m?m[1]:null};
+/* liens YouTube : une ligne par lien, « + » pour en ajouter */
+function crYtRow(val,first){const r=document.createElement('div');r.className='cr-ytrow';
+  r.innerHTML=`<input class="inp cr-ytin" placeholder="https://www.youtube.com/watch?v=… ou /shorts/…" aria-label="Lien YouTube">${first?'<button type="button" class="btn cr-ytadd" title="Ajouter un autre lien YouTube" aria-label="Ajouter un autre lien YouTube">+</button>':'<button type="button" class="btn danger cr-ytdel" title="Retirer ce lien" aria-label="Retirer ce lien">✕</button>'}`;
+  r.querySelector('input').value=val||'';
+  const add=r.querySelector('.cr-ytadd');if(add)add.onclick=()=>{const n=crYtRow('',false);$('#crYts').appendChild(n);n.querySelector('input').focus()};
+  const del=r.querySelector('.cr-ytdel');if(del)del.onclick=()=>r.remove();return r}
+function crYtRows(list){const box=$('#crYts');box.innerHTML='';(list.length?list:['']).forEach((u,i)=>box.appendChild(crYtRow(u,i===0)))}
 const crLines=v=>String(v||'').split('\n').map(x=>x.replace(/^\s*[-•\d.)]+\s*/,'').trim()).filter(Boolean);
 function crPreview(){const cv=$('#crCv');if(!cv)return;const info=$('#crInfo'),n=hbToks().length;
   if(!n){const c=cv.getContext('2d');fit(cv);c.fillStyle=RINKPAL.arena;c.fillRect(0,0,cv.width,cv.height);info.textContent='Le tableau est vide : dessinez l\'exercice sur le tableau (demi-glace).';return}
@@ -2110,17 +2122,20 @@ function crPreview(){const cv=$('#crCv');if(!cv)return;const info=$('#crInfo'),n
 function crFill(def){const f=$('#crForm');const v=(n,x)=>{f.elements[n].value=x||''};
   v('title',def&&def.title);v('lib',def?def.lib:'drills');v('cat',def?def.cat:'collectif');f.elements.tag5.checked=!!(def&&def.tag==='5c4');v('dur',def?def.dur:'8 min');v('sub',def&&def.sub);
   v('org',def&&def.org);v('steps',def&&(def.steps||[]).join('\n'));v('points',def&&(def.points||[]).join('\n'));v('errs',def&&(def.errs||[]).join('\n'));v('prog',def&&def.prog);v('mat',def&&def.mat);
-  v('yt',def&&def.vids&&def.vids[0]?'https://www.youtube.com/watch?v='+def.vids[0].id:'');v('ys',def&&def.clip?def.clip.start:'');v('ye',def&&def.clip?def.clip.end:'');
+  crYtRows(def&&def.vids?def.vids.map(x=>'https://www.youtube.com/watch?v='+x.id):[]);v('ys',def&&def.clip?def.clip.start:'');v('ye',def&&def.clip?def.clip.end:'');
   $('#crMode').textContent=def?'Modification : '+def.title:'Nouvel exercice';const sv=$('#crSaved');if(sv&&!def)sv.hidden=true}
 function crSave(e){e.preventDefault();const f=$('#crForm'),g=n=>f.elements[n].value.trim();
   if(!g('title'))return toast('Donnez un titre à l\'exercice');if(!hbToks().length)return toast('Dessinez d\'abord l\'exercice sur le tableau');
   if(!HB.half)return toast('Passez le tableau en demi-glace pour enregistrer l\'exercice');
-  const id=HB.editing?HB.editing.id:'mes-'+uid(),yid=crYt(g('yt')),ys=parseFloat(g('ys')),ye=parseFloat(g('ye'));
+  const yv=$$('#crYts .cr-ytin').map(i=>i.value.trim()).filter(Boolean),bad=yv.filter(u=>!crYt(u));
+  if(bad.length)return toast('Lien YouTube non reconnu : '+bad[0].slice(0,60));
+  const yids=[...new Set(yv.map(crYt))],yid=yids[0]||null;
+  const id=HB.editing?HB.editing.id:'mes-'+uid(),ys=parseFloat(g('ys')),ye=parseFloat(g('ye'));
   const def=Object.assign({id,lib:g('lib'),cat:g('cat'),dur:g('dur'),title:g('title'),sub:g('sub')||(g('lib')==='skills'?'Skill':'Exercice créé sur le tableau'),
     org:g('org'),steps:crLines(g('steps')),points:crLines(g('points')),prog:g('prog'),mat:g('mat'),yt:'hockey '+g('title'),
     board:{half:HB.half,items:clone(HB.items),anim:HB.anim?clone(HB.anim):null}},hbToDrill());
   const er=crLines(g('errs'));if(er.length)def.errs=er;if(f.elements.tag5.checked)def.tag='5c4';
-  if(yid){def.vids=[{id:yid,title:'Vidéo de référence',by:'YouTube'}];if(isFinite(ys)&&isFinite(ye)&&ye>ys)def.clip={id:yid,start:Math.round(ys),end:Math.round(ye),by:'YouTube'}}
+  if(yid){def.vids=yids.map((v,i)=>({id:v,title:yids.length>1?'Vidéo de référence '+(i+1):'Vidéo de référence',by:'YouTube'}));if(isFinite(ys)&&isFinite(ye)&&ye>ys)def.clip={id:yid,start:Math.round(ys),end:Math.round(ye),by:'YouTube'}}
   const i=MES.defs.findIndex(x=>x.id===id);if(i>=0)MES.defs[i]=def;else MES.defs.unshift(def);
   if(!mesStore())return;mesSync();HB.editing={id,title:def.title};crFill(def);crList();hbAnimUI();
   const ok=$('#crSaved');ok.hidden=false;ok.innerHTML=`<span>Enregistré dans la librairie, section <b>${def.lib==='skills'?'Skills':'Drills'}</b>.</span><button class="btn sm" type="button" id="crSeeLib">Voir dans la librairie</button>`;
