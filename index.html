@@ -74,6 +74,29 @@
   .hb-bar .tool{width:42px;height:42px}
   .lib-q{max-width:none;width:100%}
 }
+
+/* librairie : onglets, étiquette 5 c 4, lecteur vidéo */
+.lib-tabs{margin-top:6px}
+.lib-tabs button{font-family:var(--f-display);font-weight:700;font-size:15px;letter-spacing:.05em;text-transform:uppercase;padding:7px 16px}
+.lib-tag{--c:#6B4FA8}
+.lib-acts .btn svg{width:15px;height:15px}
+.lib-empty{background:var(--surface);border:1px dashed var(--line);border-radius:var(--r);padding:28px 22px;display:flex;flex-direction:column;gap:10px;align-items:flex-start;max-width:640px}
+.lib-empty h3{margin:0;font-family:var(--f-display);font-size:24px;text-transform:uppercase}
+.lib-empty p{margin:0;color:var(--ink-2);line-height:1.5}
+.lm-back{position:fixed;inset:0;z-index:40;background:rgba(8,12,18,.72);display:grid;place-items:center;padding:16px}
+.lm-card{width:min(960px,100%);max-height:100%;overflow-y:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);display:flex;flex-direction:column}
+.lm-head{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid var(--line)}
+.lm-head b{font-family:var(--f-display);font-size:20px;text-transform:uppercase;line-height:1.1}
+.lm-player{position:relative;aspect-ratio:16/9;max-width:100%;background:var(--stage)}
+.lm-player video,.lm-player iframe{position:absolute;inset:0;width:100%;height:100%;border:0;object-fit:contain;background:#000}
+.lm-noembed{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:12px;color:var(--stage-ink);text-align:center;padding:16px}
+.lm-noembed p{margin:0}
+.lm-list{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:6px;padding:10px 12px 0}
+.lm-src{display:flex;flex-direction:column;gap:2px;text-align:left;border:1px solid var(--line);background:var(--surface);border-radius:8px;padding:8px 10px}
+.lm-src .n{font-weight:600}
+.lm-src.active{border-color:var(--ink);box-shadow:inset 3px 0 0 var(--goal)}
+.lm-foot{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:10px 12px 12px}
+.lm-foot a{color:var(--blue);font-weight:600;font-size:13px}
 </style>
 <title>Banc Vidéo Hockey</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -522,6 +545,7 @@ button{cursor:pointer}
     <div class="hb-bar" id="hbBar" role="toolbar" aria-label="Outils du tableau"></div>
   </section>
   <section id="libView" aria-label="Librairie de drills"></section>
+  <div class="lm-back" id="libModal" hidden></div>
   <section id="createView" aria-label="Création d'exercices">
     <div class="lib-wrap cr-wrap">
       <div><h2 class="lib-title">Création d'exercices</h2><p class="muted">Prochaine étape du développement.</p></div>
@@ -1357,7 +1381,108 @@ const PRATIQUES=[{id:'p01',name:'Pratique 01',theme:"Vitesse d'exécution et sou
  clip:{id:'yOgHqZVQiqs',start:0,end:3,by:'iTrain Hockey'},
  vids:[{id:'yOgHqZVQiqs',title:"How To Pivot From Forwards To Backwards",by:'iTrain Hockey',note:"Vidéo de départ choisie par l'entraîneur."},
    {id:'5AqR1NJ-r-w',title:"Forward to Backward: Mohawk Pivot",by:'USA Hockey',note:"Le pivot talon vers talon montré par USA Hockey."},
-   {id:'rruhyQMD9DM',title:"Transition Skating Part One: Forward to Backward",by:"Marcel's Hockey School",note:"Les transitions avant → arrière enseignées étape par étape."}]}
+   {id:'rruhyQMD9DM',title:"Transition Skating Part One: Forward to Backward",by:"Marcel's Hockey School",note:"Les transitions avant → arrière enseignées étape par étape."}]},
+{id:'sp-an131',cat:'collectif',tag:'5c4',dur:'10 min',title:"AN 1-3-1 : passe au bumper et tir sur réception",sub:"Avantage numérique 5 c 4 · circulation",
+ tokens:[{id:'P',k:'a',x:195,y:260,l:'P'},{id:'HG',k:'a',x:330,y:95,l:'HG'},{id:'HD',k:'a',x:330,y:425,l:'HD'},{id:'B',k:'a',x:420,y:260,l:'B'},{id:'F',k:'a',x:510,y:250,l:'F'},
+   {id:'X1',k:'b',x:360,y:190,l:''},{id:'X2',k:'b',x:360,y:330,l:''},{id:'X3',k:'b',x:470,y:190,l:''},{id:'X4',k:'b',x:470,y:330,l:''},
+   {id:'C',k:'c',x:60,y:260,l:'C'},{id:'P1',k:'puck',x:203,y:268},TRG],
+ moves:[
+  {k:'pass',pk:'P1',pts:[[203,268],[328,418]],t:0,d:0.7},
+  {k:'skate',w:'X2',pts:[[360,330],[345,385]],t:0.3,d:0.8},
+  {k:'pass',pk:'P1',pts:[[330,420],[414,264]],t:1.2,d:0.55},
+  {k:'skate',w:'X4',pts:[[470,330],[452,292]],t:1.4,d:0.6},
+  {k:'skate',w:'X1',pts:[[360,190],[392,232]],t:1.5,d:0.6},
+  {k:'pass',pk:'P1',pts:[[418,256],[336,102]],t:1.9,d:0.55},
+  {k:'skate',w:'F',pts:[[510,250],[524,240]],t:1.9,d:0.6},
+  {k:'shot',pk:'P1',pts:[[336,102],[541,250]],t:2.55,d:0.45}],
+ org:"Unité de 5 en avantage contre 4 en boîte, sur notre demi-glace. L'entraîneur met la rondelle en jeu à la pointe. Présences de 40 secondes; les unités suivantes attendent à la bande, près de la ligne bleue.",
+ steps:["La pointe (P) passe au demi-mur fort (HD).","HD attire le joueur de boîte, puis glisse la rondelle au bumper (B) dans l'enclave.","B, dos ou face au filet, remet rapidement au demi-mur faible (HG).","HG tire sur réception. F fait écran et va au retour. Le désavantage dégage jusqu'à la ligne rouge s'il récupère."],
+ points:["Le bumper bouge pour se libérer d'un joueur de boîte; il reste dans la ligne de passe.","Passes rapides et à plat : la boîte n'a pas le temps de se déplacer.","HG est prêt au tir avant de recevoir : bâton en haut, pieds placés.","F reste dans les yeux du gardien et garde son bâton sur la glace pour la déviation.","Après le tir, deux joueurs au filet, trois à la récupération."],
+ errs:["Garder la rondelle trop longtemps au demi-mur.","Bumper immobile, caché derrière un défenseur.","Tir de HG sans écran : le gardien voit tout.","Passes à travers la boîte quand la ligne est fermée."],
+ prog:"1) Sans opposition, rotation des 5 positions. 2) Boîte passive (bâtons seulement). 3) Boîte active, le désavantage peut dégager. 4) Compter les tirs réussis en 40 secondes.",
+ mat:"Rondelles avec l'entraîneur, dossards pour l'unité en désavantage.",yt:"hockey 1-3-1 power play drill"},
+{id:'sp-anentree',cat:'collectif',tag:'5c4',dur:'10 min',title:"AN : entrée de zone avec passe en retrait",sub:"Avantage numérique 5 c 4 · entrée de zone",
+ tokens:[{id:'A1',k:'a',x:60,y:255,l:'1'},{id:'A2',k:'a',x:25,y:300,l:'2'},{id:'A3',k:'a',x:60,y:90,l:'3'},{id:'A4',k:'a',x:60,y:430,l:'4'},{id:'A5',k:'a',x:30,y:150,l:'5'},
+   {id:'X1',k:'b',x:200,y:185,l:''},{id:'X2',k:'b',x:200,y:340,l:''},{id:'X3',k:'b',x:390,y:200,l:''},{id:'X4',k:'b',x:390,y:320,l:''},
+   {id:'P1',k:'puck',x:68,y:263},TRG],
+ moves:[
+  {k:'carry',w:'A1',pk:'P1',pts:[[60,255],[100,232],[140,215]],t:0,d:1.2},
+  {k:'skate',w:'A2',pts:[[25,300],[70,292],[110,285]],t:0,d:1.2},
+  {k:'skate',w:'A3',pts:[[60,90],[200,70],[320,85]],t:0.3,d:2.2},
+  {k:'skate',w:'A4',pts:[[60,430],[200,450],[320,440]],t:0.3,d:2.2},
+  {k:'skate',w:'A5',pts:[[30,150],[120,150],[205,160]],t:0.5,d:1.8},
+  {k:'pass',pk:'P1',pts:[[140,215],[116,282]],t:1.2,d:0.4},
+  {k:'skate',w:'X1',pts:[[200,185],[175,205]],t:0.9,d:0.6},
+  {k:'carry',w:'A2',pk:'P1',pts:[[110,285],[190,318],[268,372]],t:1.6,d:1.4},
+  {k:'skate',w:'A1',pts:[[140,215],[300,210],[500,250]],t:1.6,d:2.2},
+  {k:'skate',w:'X2',pts:[[200,340],[250,358]],t:1.6,d:1.0},
+  {k:'skate',w:'X3',pts:[[390,200],[420,235]],t:2.2,d:0.8},
+  {k:'pass',pk:'P1',pts:[[272,376],[318,434]],t:3.1,d:0.5}],
+ org:"Les 5 attaquants partent à la ligne rouge (de notre côté des cônes). Deux défenseurs du désavantage attendent à la ligne bleue, deux plus creux dans la zone. L'entraîneur donne la rondelle au porteur (1).",
+ steps:["Le porteur (1) monte au centre et attire les deux joueurs à la ligne bleue.","Avant la ligne bleue, il laisse la rondelle en retrait au joueur 2 qui arrive avec vitesse.","Le joueur 2 entre en zone par le côté libre; les ailiers (3 et 4) entrent larges, le 5 suit à la pointe.","Le 1 file au filet; la rondelle va au demi-mur (4) et l'unité s'installe en 1-3-1."],
+ points:["La passe en retrait se fait avant la ligne bleue, à plat, devant le receveur.","Le receveur arrive avec vitesse : il prend l'espace que le porteur a créé.","Les ailiers entrent larges et à la même hauteur pour éviter le hors-jeu.","Si l'entrée échoue : on regroupe à la ligne rouge, on ne force pas.","Objectif : entrer en contrôle et installer l'unité en moins de 5 secondes."],
+ errs:["Passe en retrait trop tard, dans les patins du défenseur.","Receveur arrêté : il reçoit sans vitesse.","Ailiers en avance sur la rondelle : hors-jeu.","Tout le monde au centre : aucune option de côté."],
+ prog:"1) Sans opposition, timing de la passe en retrait. 2) Deux défenseurs à la ligne bleue seulement. 3) Quatre défenseurs, ils peuvent dégager. 4) Variante : entrée par le côté avec passe au centre.",
+ mat:"Rondelles avec l'entraîneur à la ligne rouge.",yt:"power play zone entry drop pass drill"},
+{id:'sp-anparapluie',cat:'collectif',tag:'5c4',dur:'10 min',title:"AN parapluie : tir de la pointe, écran et déviation",sub:"Avantage numérique 5 c 4 · tir et présence au filet",
+ tokens:[{id:'P',k:'a',x:190,y:260,l:'P'},{id:'G1',k:'a',x:245,y:110,l:'G'},{id:'D1',k:'a',x:245,y:410,l:'D'},{id:'F',k:'a',x:510,y:255,l:'F'},{id:'T',k:'a',x:480,y:330,l:'T'},
+   {id:'X1',k:'b',x:330,y:200,l:''},{id:'X2',k:'b',x:330,y:320,l:''},{id:'X3',k:'b',x:460,y:200,l:''},{id:'X4',k:'b',x:460,y:320,l:''},
+   {id:'C',k:'c',x:60,y:260,l:'C'},{id:'P1',k:'puck',x:252,y:118},TRG],
+ moves:[
+  {k:'pass',pk:'P1',pts:[[252,118],[198,254]],t:0,d:0.6},
+  {k:'carry',w:'P',pk:'P1',pts:[[190,260],[198,282],[208,302]],t:0.7,d:0.8},
+  {k:'skate',w:'X1',pts:[[330,200],[305,240]],t:0.8,d:0.7},
+  {k:'skate',w:'F',pts:[[510,255],[522,262]],t:0.8,d:0.6},
+  {k:'skate',w:'T',pts:[[480,330],[505,300],[518,285]],t:1.0,d:0.8},
+  {k:'shot',pk:'P1',pts:[[212,302],[541,264]],t:1.7,d:0.5}],
+ org:"Trois joueurs en haut (parapluie : pointe P et les deux flancs G et D), deux au filet (F en écran, T pour la déviation). Quatre joueurs en boîte. L'entraîneur remet une nouvelle rondelle à un flanc après chaque tir.",
+ steps:["Le flanc G remet la rondelle à la pointe.","La pointe se déplace latéralement sur la ligne bleue pour ouvrir une ligne de tir.","Tir bas et rapide vers les jambières.","F fait écran devant le gardien; T arrive de côté pour dévier ou prendre le retour."],
+ points:["La pointe marche la ligne pour changer l'angle : le tir passe à côté du joueur de boîte.","Tir bas, sur la glace ou à la hauteur des jambières : c'est ce qu'on peut dévier.","F se place entre le gardien et le tireur, pieds larges, bâton sur la glace.","T arrive en mouvement; il ne reste pas planté à côté de F.","Les flancs se replacent pour le retour et protègent la ligne bleue."],
+ errs:["Tir haut ou dans le joueur de boîte.","Écran trop loin du gardien (il voit par-dessus).","Les deux joueurs au filet au même endroit.","Pointe immobile qui tire dans la même ligne chaque fois."],
+ prog:"1) Tirs sans opposition, travail de l'écran et de la déviation. 2) Boîte passive. 3) Boîte active : le désavantage bloque et dégage. 4) Tir sur réception sans contrôle.",
+ mat:"20 rondelles avec l'entraîneur.",yt:"umbrella power play point shot screen tip drill"},
+{id:'sp-dnboite',cat:'collectif',tag:'5c4',dur:'10 min',title:"DN boîte : déplacements en bloc et blocage de tir",sub:"Désavantage numérique 4 c 5 · position",
+ tokens:[{id:'A1',k:'a',x:360,y:190,l:'A'},{id:'A2',k:'a',x:360,y:330,l:'A'},{id:'D1',k:'a',x:470,y:200,l:'D'},{id:'D2',k:'a',x:470,y:320,l:'D'},
+   {id:'Q',k:'b',x:190,y:260,l:'P'},{id:'Y1',k:'b',x:330,y:70,l:''},{id:'Y2',k:'b',x:330,y:450,l:''},{id:'Y3',k:'b',x:420,y:255,l:''},{id:'Y4',k:'b',x:515,y:245,l:''},
+   {id:'C',k:'c',x:60,y:260,l:'C'},{id:'P1',k:'puck',x:198,y:268},TRG],
+ moves:[
+  {k:'pass',pk:'P1',pts:[[198,268],[328,444]],t:0,d:0.7},
+  {k:'skate',w:'A2',pts:[[360,330],[332,392]],t:0.3,d:0.8},
+  {k:'skate',w:'D2',pts:[[470,320],[452,360]],t:0.3,d:0.8},
+  {k:'skate',w:'A1',pts:[[360,190],[382,248]],t:0.3,d:0.8},
+  {k:'skate',w:'D1',pts:[[470,200],[482,235]],t:0.3,d:0.8},
+  {k:'pass',pk:'P1',pts:[[330,446],[196,266]],t:1.3,d:0.7},
+  {k:'skate',w:'A1',pts:[[382,248],[290,262]],t:1.6,d:0.8},
+  {k:'skate',w:'A2',pts:[[332,392],[360,330]],t:1.6,d:0.8},
+  {k:'skate',w:'D2',pts:[[452,360],[470,320]],t:1.6,d:0.8},
+  {k:'skate',w:'D1',pts:[[482,235],[470,200]],t:1.6,d:0.8},
+  {k:'shot',pk:'P1',pts:[[196,262],[284,262]],t:2.5,d:0.35}],
+ org:"Notre unité de 4 en boîte (2 attaquants A en haut, 2 défenseurs D en bas) contre 5 en avantage. L'entraîneur met la rondelle en jeu à la pointe adverse. Présences de 40 secondes.",
+ steps:["La rondelle va au demi-mur : l'attaquant du côté fort met de la pression, la boîte glisse en bloc vers la rondelle.","Les deux joueurs du côté faible ferment le centre (enclave, bumper).","Retour de la rondelle à la pointe : l'attaquant le plus près sort dans la ligne de tir.","Il bloque ou dévie le tir; si on récupère, on dégage jusqu'à la ligne rouge."],
+ points:["La boîte bouge en bloc : quand un joueur avance, les trois autres ajustent.","Bâtons dans les lignes de passe, surtout vers l'enclave.","Pour bloquer : se placer dans la ligne de tir, de face, le bâton hors du chemin.","Les défenseurs gardent l'intérieur et laissent l'extérieur au gardien.","Dégager à la ligne rouge seulement : la demi-glace est partagée."],
+ errs:["Deux joueurs sur la même rondelle : l'enclave s'ouvre.","Attaquant qui sort trop tard sur la pointe.","Bloquer de côté ou le dos tourné.","Défenseur qui suit son joueur derrière le filet."],
+ prog:"1) Marche : les 5 en avantage se passent la rondelle lentement, la boîte ajuste. 2) Vitesse normale sans tir. 3) Tirs permis. 4) Récupération et dégagement comptent un point.",
+ mat:"Rondelles avec l'entraîneur, dossards pour l'unité en avantage.",yt:"penalty kill box shot block drill"},
+{id:'sp-dnlosange',cat:'collectif',tag:'5c4',dur:'10 min',title:"DN losange : pression au demi-mur et dégagement",sub:"Désavantage numérique 4 c 5 · pression et récupération",
+ tokens:[{id:'H',k:'a',x:255,y:260,l:'A'},{id:'S1',k:'a',x:390,y:150,l:'A'},{id:'S2',k:'a',x:390,y:370,l:'D'},{id:'L',k:'a',x:490,y:260,l:'D'},
+   {id:'Q',k:'b',x:190,y:260,l:'P'},{id:'Y1',k:'b',x:330,y:72,l:''},{id:'Y2',k:'b',x:340,y:450,l:''},{id:'Y3',k:'b',x:430,y:280,l:''},{id:'Y4',k:'b',x:515,y:235,l:''},
+   {id:'C',k:'c',x:60,y:260,l:'C'},{id:'P1',k:'puck',x:198,y:268},TRG],
+ moves:[
+  {k:'pass',pk:'P1',pts:[[198,268],[330,80]],t:0,d:0.7},
+  {k:'skate',w:'S1',pts:[[390,150],[365,110],[346,92]],t:0.4,d:0.7},
+  {k:'skate',w:'H',pts:[[255,260],[245,200],[255,165]],t:0.5,d:0.8},
+  {k:'skate',w:'L',pts:[[490,260],[470,232]],t:0.5,d:0.7},
+  {k:'skate',w:'S2',pts:[[390,370],[410,300]],t:0.6,d:0.7},
+  {k:'pass',pk:'P1',pts:[[332,82],[362,106]],t:1.2,d:0.3},
+  {k:'carry',w:'S1',pk:'P1',pts:[[346,92],[352,100],[318,66],[282,52]],t:1.5,d:0.9},
+  {k:'pass',pk:'P1',pts:[[282,52],[160,40],[40,48]],t:2.5,d:0.8}],
+ org:"Notre unité de 4 en losange (un attaquant haut, deux joueurs de côté, un défenseur devant le filet) contre 5. L'entraîneur met la rondelle en jeu à la pointe adverse. Présences de 30 à 40 secondes.",
+ steps:["Passe au demi-mur : le joueur de côté attaque le receveur dès que la rondelle part.","Le joueur haut coupe la passe de retour à la pointe; le défenseur bas ferme l'enclave.","Sur une réception ratée, le presseur récupère et protège la rondelle contre la bande.","Dégagement le long de la bande jusqu'à la ligne rouge (cônes)."],
+ points:["La pression part pendant que la rondelle voyage, pas après la réception.","Approche en angle, bâton sur la glace : on enlève le temps et la passe vers l'enclave.","Le losange se resserre derrière le presseur : personne ne reste seul au filet.","Dégager fort et haut sur la bande, jamais au centre.","Un seul presseur à la fois : si la passe sort, on revient au losange."],
+ errs:["Presser trop tard : l'adversaire a déjà levé la tête.","Deux presseurs sur le même joueur.","Dégager au centre de la glace.","Dégager au-delà de la ligne rouge : la rondelle va chez l'autre équipe."],
+ prog:"1) Pression seule, sans dégagement. 2) Pression et dégagement. 3) L'avantage peut contourner la pression; on revient au losange. 4) Compter les dégagements réussis par présence.",
+ mat:"Rondelles avec l'entraîneur, dossards pour l'unité en avantage.",yt:"penalty kill diamond pressure drill"}
+
 ]}];
 
 /* préparation : pieds, tracés densifiés, longueurs */
@@ -1782,28 +1907,66 @@ function hbFull(on){$('#app').classList.toggle('hb-full',on);
 document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&$('#app').classList.contains('hb-full'))hbFull(false)});
 
 /* ================= librairie de drills ================= */
-const LIB={cat:'',q:''};
+const LIB={cat:'',q:'',tab:'drills'};
+const LIB_CHIPS=[['','Tous'],['patin','Patin'],['rondelle','Rondelle'],['collectif','Collectif'],['tag:5c4','5 c 4'],['recup','Retour au calme']];
 function libItems(){const seen=new Set(),out=[];PRATIQUES.forEach((p,pi)=>p.items.forEach(d=>{if(d.pause||seen.has(d.id))return;seen.add(d.id);out.push({d,pi})}));return out}
+function libMatch(d){if(!LIB.cat)return true;return LIB.cat.startsWith('tag:')?d.tag===LIB.cat.slice(4):d.cat===LIB.cat}
+/* vidéos d'un exercice : fichiers importés dans la fiche, puis séquence et vidéos YouTube */
+async function libVidIds(){const ids=new Set();try{const db=await trDB();await new Promise(res=>{const rq=db.transaction('media').objectStore('media').openCursor();
+  rq.onsuccess=()=>{const c=rq.result;if(c){if(String(c.value.type||'').startsWith('video'))ids.add(c.value.drill);c.continue()}else res()};rq.onerror=()=>res()})}catch(e){}
+  trMem.forEach(m=>{if(String(m.type).startsWith('video'))ids.add(m.drill)});return ids}
+const libHasYt=d=>!!(d.clip||(d.vids&&d.vids.length));
 function drawDrillThumb(cv,d){fit(cv);const c=cv.getContext('2d'),W=cv.width,H=cv.height;c.fillStyle=RINKPAL.arena;c.fillRect(0,0,W,H);
   const k=Math.min(W/100,H/85)*.96,ox=(W-100*k)/2,oy=(H-85*k)/2,px=p=>[ox+p[0]*k,oy+p[1]*k];
   c.save();c.beginPath();c.rect(0,0,ox+100.6*k,H);c.clip();c.translate(ox,oy);c.scale(k,k);drawRinkFt(c);c.restore();
   const w=Math.max(1.2,.42*k);d.moves.forEach(m=>drawPath(c,m.k,m.dense.map(px),TR_INK,w,k));
   [...d.tokens.filter(t=>t.k==='cone'),...d.tokens.filter(t=>t.k!=='cone'&&t.k!=='puck'),...d.tokens.filter(t=>t.k==='puck')].forEach(t=>trTok(c,t,px([t.fx,t.fy]),k))}
-function libRender(){const all=libItems();const q=LIB.q.toLowerCase();
-  const list=all.filter(({d})=>(!LIB.cat||d.cat===LIB.cat)&&(!q||(d.title+' '+d.sub+' '+(d.org||'')).toLowerCase().includes(q)));
+function libCard({d,pi}){const cat=TR_CAT[d.cat];return `<article class="lib-card"><canvas data-libth="${d.id}" aria-label="Schéma : ${esc(d.title)}"></canvas>
+  <div class="lib-body"><div class="lib-meta"><span class="row" style="gap:4px"><span class="tr-cat" style="--c:${cat[1]}">${cat[0]}</span>${d.tag==='5c4'?'<span class="tr-cat lib-tag">5 c 4</span>':''}</span><span class="t">${d.start!=null&&!PRATIQUES[pi].kind?(d.end-d.start)+' min':esc(d.dur||'')}</span></div>
+  <h3>${esc(d.title)}</h3><p class="muted">${esc(d.sub)} · ${esc(PRATIQUES[pi].name)}</p>
+  <div class="lib-acts"><button class="btn sm primary" data-libo="${d.id}" data-pi="${pi}">Ouvrir la fiche</button><button class="btn sm" data-libb="${d.id}">Sur le tableau</button>
+  <button class="btn sm" data-libv="${d.id}"${libHasYt(d)?'':' hidden'}><svg viewBox="0 0 24 24"><path d="M4 7h11v10H4zM15 10l5-3v10l-5-3"/></svg>Vidéo</button></div></div></article>`}
+function libRender(){const all=libItems();const q=LIB.q.toLowerCase();const isS=LIB.tab==='skills';
+  const pool=all.filter(({d})=>isS?d.lib==='skills':d.lib!=='skills');
+  const list=pool.filter(({d})=>libMatch(d)&&(!q||(d.title+' '+d.sub+' '+(d.org||'')).toLowerCase().includes(q)));
   const v=$('#libView');
-  v.innerHTML=`<div class="lib-wrap"><div class="lib-head"><div><h2 class="lib-title">Librairie de drills</h2><p class="muted">${all.length} exercices · ouvrez la fiche complète ou placez le schéma sur le tableau pour l'expliquer.</p></div>
-    <input class="inp lib-q" id="libQ" placeholder="Rechercher un exercice" value="${esc(LIB.q)}" autocomplete="off"></div>
-    <div class="chips">${[['','Tous'],...Object.entries(TR_CAT).map(([k,v])=>[k,v[0]])].map(([k,n])=>`<button class="chip${LIB.cat===k?' active':''}" data-libc="${k}">${esc(n)}</button>`).join('')}</div>
-    <div class="lib-grid">${list.map(({d,pi})=>{const cat=TR_CAT[d.cat];return `<article class="lib-card"><canvas data-libth="${d.id}" aria-label="Schéma : ${esc(d.title)}"></canvas>
-      <div class="lib-body"><div class="lib-meta"><span class="tr-cat" style="--c:${cat[1]}">${cat[0]}</span><span class="t">${d.start!=null&&!PRATIQUES[pi].kind?(d.end-d.start)+' min':esc(d.dur||'')}</span></div>
-      <h3>${esc(d.title)}</h3><p class="muted">${esc(d.sub)} · ${esc(PRATIQUES[pi].name)}</p>
-      <div class="lib-acts"><button class="btn sm primary" data-libo="${d.id}" data-pi="${pi}">Ouvrir la fiche</button><button class="btn sm" data-libb="${d.id}">Sur le tableau</button></div></div></article>`}).join('')||'<p class="muted">Aucun exercice pour ce filtre.</p>'}</div></div>`;
-  const qi=$('#libQ');qi.oninput=e=>{LIB.q=e.target.value;const pos=e.target.selectionStart;libRender();const n=$('#libQ');n.focus();n.setSelectionRange(pos,pos)};
+  v.innerHTML=`<div class="lib-wrap"><div class="lib-head"><div><h2 class="lib-title">Librairie de drills</h2>
+    <div class="seg lib-tabs" role="tablist"><button role="tab" data-libt="drills" aria-selected="${!isS}" class="${isS?'':'active'}">Drills</button><button role="tab" data-libt="skills" aria-selected="${isS}" class="${isS?'active':''}">Skills</button></div></div>
+    ${pool.length?`<input class="inp lib-q" id="libQ" placeholder="Rechercher ${isS?'un skill':'un exercice'}" value="${esc(LIB.q)}" autocomplete="off">`:''}</div>
+    ${isS?`<p class="muted">Exercices axés sur la technique individuelle, créés manuellement.</p>`:`<p class="muted">${pool.length} exercices · ouvrez la fiche, placez le schéma sur le tableau ou regardez la vidéo.</p>`}
+    ${pool.length?`<div class="chips">${LIB_CHIPS.filter(([k])=>!k||pool.some(({d})=>k.startsWith('tag:')?d.tag===k.slice(4):d.cat===k)).map(([k,n])=>`<button class="chip${LIB.cat===k?' active':''}" data-libc="${k}">${esc(n)}</button>`).join('')}</div>`:''}
+    ${pool.length?`<div class="lib-grid">${list.map(libCard).join('')||'<p class="muted">Aucun exercice pour ce filtre.</p>'}</div>`
+      :`<div class="lib-empty"><h3>Aucun skill pour l'instant</h3><p>Les exercices techniques que tu créeras avec l'outil Création apparaîtront ici : maniement, tir, patin, feintes. Chacun aura son schéma, ses consignes et sa vidéo.</p><button class="btn primary" id="libToCreate">Ouvrir Création</button></div>`}</div>`;
+  const qi=$('#libQ');if(qi)qi.oninput=e=>{LIB.q=e.target.value;const pos=e.target.selectionStart;libRender();const n=$('#libQ');n.focus();n.setSelectionRange(pos,pos)};
+  $$('[data-libt]',v).forEach(b=>b.onclick=()=>{if(LIB.tab===b.dataset.libt)return;LIB.tab=b.dataset.libt;LIB.cat='';LIB.q='';libRender()});
+  const tc=$('#libToCreate');if(tc)tc.onclick=()=>setMode('create');
   $$('[data-libc]',v).forEach(b=>b.onclick=()=>{LIB.cat=b.dataset.libc;libRender()});
   $$('[data-libo]',v).forEach(b=>b.onclick=()=>libOpen(b.dataset.libo,+b.dataset.pi));
   $$('[data-libb]',v).forEach(b=>b.onclick=()=>libToBoard(TR_BYID[b.dataset.libb]));
+  $$('[data-libv]',v).forEach(b=>b.onclick=()=>libVideo(TR_BYID[b.dataset.libv]));
+  libVidIds().then(ids=>{if(MODE!=='lib')return;ids.forEach(id=>{const b=v.querySelector(`[data-libv="${id}"]`);if(b)b.hidden=false})});
   requestAnimationFrame(()=>$$('[data-libth]',v).forEach(cv=>drawDrillThumb(cv,TR_BYID[cv.dataset.libth])))}
+/* lecteur vidéo de la librairie */
+async function libVideo(d){if(!d)return;const files=(await trMediaList(d.id)).filter(m=>String(m.type).startsWith('video'));const src=[];
+  files.forEach(m=>src.push({kind:'file',m,label:m.name,sub:'Vidéo importée'}));
+  if(d.clip)src.push({kind:'yt',id:d.clip.id,start:d.clip.start,end:d.clip.end,label:`Séquence de l'exercice (${d.clip.start}–${d.clip.end} s)`,sub:d.clip.by||'YouTube'});
+  (d.vids||[]).forEach(x=>src.push({kind:'yt',id:x.id,label:x.title,sub:x.by}));
+  if(!src.length)return toast('Aucune vidéo pour cet exercice');
+  const box=$('#libModal');box.hidden=false;
+  box.innerHTML=`<div class="lm-card" role="dialog" aria-modal="true" aria-label="Vidéo : ${esc(d.title)}"><div class="lm-head"><b>${esc(d.title)}</b><button class="btn sm" id="lmX">Fermer</button></div>
+    <div class="lm-player" id="lmPlayer"></div>${src.length>1?`<div class="lm-list">${src.map((s,i)=>`<button class="lm-src" data-lms="${i}"><span class="n">${esc(s.label)}</span><span class="muted">${esc(s.sub||'')}</span></button>`).join('')}</div>`:''}
+    <div class="lm-foot" id="lmFoot"></div></div>`;
+  const play=i=>{const s=src[i];const pl=$('#lmPlayer'),ft=$('#lmFoot');$$('[data-lms]',box).forEach(b=>b.classList.toggle('active',+b.dataset.lms===i));
+    const old=pl.querySelector('video');old&&old.pause();
+    if(s.kind==='file'){pl.innerHTML='';const el=document.createElement('video');el.src=trUrl(s.m);el.controls=true;el.playsInline=true;el.autoplay=true;pl.appendChild(el);ft.innerHTML=`<span class="muted">${esc(s.label)}</span>`}
+    else{const full='https://www.youtube.com/watch?v='+s.id;const q=s.start!=null?`start=${s.start}&end=${s.end}&`:'';
+      pl.innerHTML=TR_EMBED?`<iframe src="https://www.youtube-nocookie.com/embed/${s.id}?${q}autoplay=1&playsinline=1&rel=0" title="${esc(s.label)}" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`
+        :`<div class="lm-noembed"><p>La lecture intégrée n'est pas offerte ici.</p><a class="btn primary" href="${full}${s.start!=null?'&t='+s.start+'s':''}" target="_blank" rel="noopener">Ouvrir sur YouTube ↗</a></div>`;
+      ft.innerHTML=`<span class="muted">${esc(s.sub||'')}</span><a href="${full}" target="_blank" rel="noopener">Vidéo complète sur YouTube ↗</a>`}};
+  $$('[data-lms]',box).forEach(b=>b.onclick=()=>play(+b.dataset.lms));$('#lmX').onclick=libVideoClose;
+  box.onclick=e=>{if(e.target===box)libVideoClose()};play(0);$('#lmX').focus()}
+function libVideoClose(){const box=$('#libModal');if(box.hidden)return;const v=box.querySelector('video');v&&v.pause();box.innerHTML='';box.hidden=true}
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#libModal').hidden){e.stopPropagation();libVideoClose()}},true);
 function libOpen(id,pi){TR.pi=pi;try{localStorage.setItem('bvh:trprat',pi)}catch(e){}const d=trItems(PRATIQUES[pi]).find(x=>x.id===id)||TR_BYID[id];
   TR.di=id;TR.playing=false;TR.rest=true;TR.t=d.total;setMode('train')}
 function libToBoard(d){if(!d)return;hbSnap();HB.half=true;
