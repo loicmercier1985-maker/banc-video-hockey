@@ -12,7 +12,69 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="Banc vidéo">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
-<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}
+/* ================= navigation principale et tableau d'accueil ================= */
+.brand{border:0;background:transparent;padding:4px 8px 4px 4px;margin-left:-4px;border-radius:10px;color:inherit;text-align:left;cursor:pointer}
+.brand:hover{background:var(--surface)}
+.brand .bt{display:block}
+.mainnav{display:flex;gap:2px;min-width:0;overflow-x:auto;scrollbar-width:none;flex:0 1 auto}
+.mainnav::-webkit-scrollbar{display:none}
+.mainnav button{flex:none;border:0;background:transparent;padding:9px 14px 7px;font-family:var(--f-display);font-weight:700;font-size:16px;letter-spacing:.04em;text-transform:uppercase;color:var(--ink-2);border-bottom:3px solid transparent;border-radius:8px 8px 0 0;white-space:nowrap}
+.mainnav button:hover{color:var(--ink);background:var(--surface)}
+.mainnav button.active{color:var(--ink);border-bottom-color:var(--goal)}
+#homeView,#libView,#createView{display:none;grid-column:1/-1;grid-row:2;min-height:0}
+#app.home #homeView{display:flex;flex-direction:column;gap:8px}
+#app.lib #libView,#app.create #createView{display:block;overflow-y:auto}
+#app.home .tools,#app.home .center,#app.home .panel,#app.home #gutV,#app.home .vidonly,#app.home #projName,
+#app.lib .tools,#app.lib .center,#app.lib .panel,#app.lib #gutV,#app.lib .vidonly,#app.lib #projName,
+#app.create .tools,#app.create .center,#app.create .panel,#app.create #gutV,#app.create .vidonly,#app.create #projName{display:none}
+.hb-stage{position:relative;flex:1;min-height:0;border-radius:var(--r);overflow:hidden;background:#C9D3DA;border:1px solid var(--line)}
+.hb-stage canvas{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;user-select:none;-webkit-user-select:none}
+.hb-hint{position:absolute;left:10px;top:10px;max-width:calc(100% - 20px);pointer-events:none;background:rgba(15,27,40,.8);color:#fff;font-size:12.5px;line-height:1.35;padding:5px 11px;border-radius:999px}
+.hb-hint{transition:opacity .4s}.hb-hint.off{opacity:0}
+.hb-hint b{font-family:var(--f-display);letter-spacing:.04em;text-transform:uppercase;font-size:13.5px}
+.hb-bar{flex:none;display:flex;align-items:center;justify-content:center;gap:4px 2px;flex-wrap:wrap;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:6px 8px}
+.hb-grp{display:flex;align-items:center;gap:2px;flex-wrap:wrap;justify-content:center}
+.hb-sep{width:1px;align-self:stretch;min-height:30px;background:var(--line);margin:3px 6px}
+.hb-bar .tool{width:44px;height:44px}
+.hb-bar .tool svg{width:24px;height:24px}
+.hb-bar .tool:disabled{opacity:.35;cursor:default;background:transparent}
+.hb-bar .sw{width:28px;height:28px;margin:0 3px}
+.hb-seg button{padding:9px 10px;font-family:var(--f-display);font-weight:700;font-size:14px;letter-spacing:.04em;text-transform:uppercase}
+.hb-pop{position:absolute;right:10px;bottom:10px;width:min(360px,calc(100% - 20px));max-height:calc(100% - 20px);overflow-y:auto;background:var(--surface);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 10px 30px rgba(0,0,0,.25);padding:12px;display:flex;flex-direction:column;gap:10px;z-index:6}
+.hb-exitfull{display:none!important;position:absolute;top:10px;right:10px;z-index:5}
+#app.hb-full .top{display:none}
+#app.hb-full{row-gap:0}
+#app.hb-full .hb-exitfull{display:grid!important}
+#app.hb-full .hb-stage{border-radius:6px}
+/* librairie */
+.lib-wrap{max-width:1280px;margin:0 auto;display:flex;flex-direction:column;gap:14px;padding:6px 2px 24px}
+.lib-head{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:flex-end;justify-content:space-between}
+.lib-title{font-family:var(--f-display);font-size:32px;font-weight:700;text-transform:uppercase;margin:0 0 2px;line-height:1}
+.lib-q{max-width:320px}
+.lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px}
+.lib-card{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;display:flex;flex-direction:column;min-width:0}
+.lib-card canvas{display:block;width:100%;aspect-ratio:100/85;max-width:100%;background:#C9D3DA}
+.lib-body{padding:10px 12px 12px;display:flex;flex-direction:column;gap:6px;flex:1}
+.lib-body h3{margin:0;font-family:var(--f-display);font-size:21px;text-transform:uppercase;line-height:1.05;text-wrap:balance}
+.lib-meta{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.lib-meta .t{font-family:var(--f-mono);font-size:12px;color:var(--ink-2)}
+.lib-acts{display:flex;gap:6px;margin-top:auto;padding-top:4px;flex-wrap:wrap}
+.cr-wrap{max-width:760px}
+.cr-lead{margin:0;font-size:15px}
+.cr-list{margin:0;padding-left:22px;display:flex;flex-direction:column;gap:6px;font-size:15px;line-height:1.45}
+@media (max-width:860px){
+  .mainnav{order:2;flex-basis:100%}
+  .mainnav button{font-size:15px;padding:8px 10px 6px}
+  #app.home #homeView{display:flex}
+  .hb-stage{flex:none;aspect-ratio:var(--hb-ar,200/85);max-height:72vh}
+  .hb-hint{font-size:11.5px;top:6px;left:6px}
+  .hb-bar{flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;scrollbar-width:thin}
+  .hb-grp{flex-wrap:nowrap}
+  .hb-bar .tool{width:42px;height:42px}
+  .lib-q{max-width:none;width:100%}
+}
+</style>
 <title>Banc Vidéo Hockey</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:wght@400;500;600&family=IBM+Plex+Mono:wght@500&display=swap">
@@ -311,17 +373,17 @@ button{cursor:pointer}
   #gutR{display:none}
 }
 @media (max-width:860px){.gut{display:none!important}}
-@media (prefers-reduced-motion: reduce){.gut::before{transition:none}}
+@media (prefers-reduced-motion: reduce){.gut::before{transition:none}.hb-hint{transition:none}}
 </style>
 </head>
 <body>
 <div id="app">
   <header class="top">
-    <div class="brand">
+    <button class="brand" id="goHome" title="Tableau (accueil)" aria-label="Tableau, accueil">
       <svg viewBox="0 0 40 40" aria-hidden="true"><rect x="2" y="7" width="36" height="26" rx="10" fill="#F7FBFE" stroke="#2B3A4A" stroke-width="2"/><rect x="12.5" y="8" width="2" height="24" fill="#1D4FA8"/><rect x="25.5" y="8" width="2" height="24" fill="#1D4FA8"/><rect x="19.3" y="8" width="1.4" height="24" fill="#C8102E"/><circle cx="20" cy="20" r="4.2" fill="none" stroke="#1D4FA8" stroke-width="1"/><path d="M9 16v8" stroke="#C8102E" stroke-width="1"/><path d="M31 16v8" stroke="#C8102E" stroke-width="1"/></svg>
-      <div><b>Banc vidéo</b><span>Positionnement hockey</span></div>
-    </div>
-    <div class="seg modes" role="group" aria-label="Mode"><button id="modeVid" class="active" aria-pressed="true">Vidéo</button><button id="modeTrain" aria-pressed="false">Entraînements</button></div>
+      <span class="bt"><b>Banc vidéo</b><span>Tableau de l'entraîneur</span></span>
+    </button>
+    <nav class="mainnav" aria-label="Sections"><button data-mode="train" id="modeTrain">Entraînements</button><button data-mode="video" id="modeVid">Sessions vidéo</button><button data-mode="lib">Librairie de drills</button><button data-mode="create">Création</button></nav>
     <input id="projName" class="projname" aria-label="Nom du projet" autocomplete="off">
     <div class="actions">
       <span class="btn primary filebtn vidonly"><svg viewBox="0 0 24 24"><path d="M4 7h11v10H4zM15 10l5-3v10l-5-3"/></svg><span class="tx">Ouvrir une vidéo</span><input type="file" class="fileov vidin" id="fileVid" accept="video/*,.mp4,.mov,.m4v,.webm" multiple aria-label="Ouvrir une vidéo"></span>
@@ -448,6 +510,31 @@ button{cursor:pointer}
     </div>
     <div class="gut" id="gutR" style="grid-area:g2" role="separator" aria-orientation="vertical" aria-label="Redimensionner la fiche de l'exercice" tabindex="0"></div>
     <aside class="tr-detail" id="trDetail"></aside>
+  </section>
+  <section id="homeView" aria-label="Tableau">
+    <div class="hb-stage" id="hbStage">
+      <canvas id="hbCv" aria-label="Patinoire à dessin"></canvas>
+      <div class="hb-hint" id="hbHint"></div>
+      <input id="hbTxt" class="txtin" hidden maxlength="40" autocomplete="off" aria-label="Texte">
+      <div class="hb-pop" id="hbPop" hidden></div>
+      <button class="ib hb-exitfull" id="hbExitFull" title="Quitter le plein écran (Échap)" aria-label="Quitter le plein écran"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    </div>
+    <div class="hb-bar" id="hbBar" role="toolbar" aria-label="Outils du tableau"></div>
+  </section>
+  <section id="libView" aria-label="Librairie de drills"></section>
+  <section id="createView" aria-label="Création d'exercices">
+    <div class="lib-wrap cr-wrap">
+      <div><h2 class="lib-title">Création d'exercices</h2><p class="muted">Prochaine étape du développement.</p></div>
+      <p class="cr-lead">Cet outil servira à bâtir tes propres drills, sans passer par moi :</p>
+      <ol class="cr-list">
+        <li>Placer joueurs, adversaires, gardiens, cônes et rondelles sur une demi-glace ou une pleine glace.</li>
+        <li>Tracer les trajets dans l'ordre, avec un temps pour chacun, pour obtenir le schéma animé.</li>
+        <li>Rédiger l'organisation, le déroulement, les points d'enseignement, les erreurs et les progressions.</li>
+        <li>Ajouter la séquence vidéo de référence et les liens YouTube.</li>
+        <li>Enregistrer l'exercice dans la librairie, puis l'ajouter à une pratique.</li>
+      </ol>
+      <div class="row"><button class="btn primary" id="crGoBoard">Dessiner sur le tableau</button><button class="btn" id="crGoLib">Voir la librairie de drills</button></div>
+    </div>
   </section>
 </div>
 <div id="media"></div>
@@ -1039,7 +1126,7 @@ $('#bMute').onclick=()=>{S.muted=!S.muted;Object.values(media).forEach(m=>m.mute
 
 /* ================= clavier ================= */
 document.addEventListener('keydown',e=>{const tg=e.target;if(tg&&(tg.tagName==='INPUT'||tg.tagName==='SELECT'||tg.tagName==='TEXTAREA'))return;
-  if($('#app').classList.contains('train'))return;
+  if(MODE!=='video')return;
   const k=e.key;
   if((e.ctrlKey||e.metaKey)&&(k==='z'||k==='Z')){e.preventDefault();e.shiftKey?redo():undo();return}
   if((e.ctrlKey||e.metaKey)&&(k==='y'||k==='Y')){e.preventDefault();redo();return}
@@ -1509,16 +1596,9 @@ const trUp=()=>{const a=TR.draft;if(!a)return;TR.draft=null;const R=TR.R;let ok;
   if(ok){const d=trDrill();(TRS.annots[d.id]=TRS.annots[d.id]||[]).push(a);trSave()}trRender()};
 trCv.addEventListener('pointerup',trUp);trCv.addEventListener('pointercancel',trUp);
 
-/* mode */
-function setMode(m){const tr=m==='train';$('#app').classList.toggle('train',tr);$('#modeVid').classList.toggle('active',!tr);$('#modeTrain').classList.toggle('active',tr);
-  $('#modeVid').setAttribute('aria-pressed',!tr);$('#modeTrain').setAttribute('aria-pressed',tr);
-  try{localStorage.setItem('bvh:mode',m)}catch(e){}
-  if(tr){try{pauseAll()}catch(e){}trRenderList();trDetail();trSync();requestAnimationFrame(trRender)}
-  else{TR.playing=false;trSync();trCloseView();trHideText();requestAnimationFrame(drawRinkPanel)}}
 function trInit(){trLoad();layInit();trBuildTools();PRATIQUES.forEach(p=>p.items.forEach(trPrep));
   let di=null;try{di=localStorage.getItem('bvh:trdrill');const pi=+localStorage.getItem('bvh:trprat');if(PRATIQUES[pi])TR.pi=pi}catch(e){}
   const pr=trPrat();TR.di=trItems(pr).some(d=>d.id===di&&!d.pause)?di:trItems(pr).find(d=>!d.pause).id;TR.t=trDrill().total;
-  $('#modeVid').onclick=()=>setMode('video');$('#modeTrain').onclick=()=>setMode('train');
   $('#trPlay').onclick=trToggle;$('#trRestart').onclick=()=>{TR.playing=false;TR.rest=false;TR.t=0;trToggle()};
   $$('#trSpeed button').forEach(b=>b.onclick=()=>{TR.speed=+b.dataset.trs;$$('#trSpeed button').forEach(x=>x.classList.toggle('active',x===b))});
   $('#trRange').addEventListener('input',e=>{const d=trDrill();TR.playing=false;TR.rest=false;TR.t=e.target.value/1000*d.total;trSync();trRender()});
@@ -1537,8 +1617,222 @@ function trInit(){trLoad();layInit();trBuildTools();PRATIQUES.forEach(p=>p.items
     else if((e.ctrlKey||e.metaKey)&&(e.key==='z'||e.key==='Z')){e.preventDefault();$('#trUndo').click()}});
   new ResizeObserver(()=>trRender()).observe($('#trBoard'));
   trToolUI();trSync();
-  let m=null;try{m=localStorage.getItem('bvh:mode')}catch(e){}if(m==='train')setMode('train');
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>trRender())}
+
+
+/* ================= tableau d'accueil (planche à dessin) ================= */
+let MODE='home';
+const HB={half:false,items:[],tool:'move',color:'#0F1B28',drag:null,draft:null,T:null,undo:[],redo:[],replay:null,txt:null,erasing:false,lastTap:null};
+const HB_COLORS=[['Encre','#0F1B28'],['Rouge','#D7263D'],['Bleu','#1D5FC2'],['Vert','#1E8E5A']];
+const hbTokSvg=(f,s,ink,l)=>`<circle cx="12" cy="12" r="10" fill="${f}" stroke="${s}" stroke-width="1.6"/><text x="12" y="12.7" text-anchor="middle" dominant-baseline="central" font-size="12.5" font-weight="700" fill="${ink}" stroke="none" font-family="Barlow Condensed,Arial Narrow,sans-serif">${l}</text>`;
+const tIco=id=>(TOOLS.find(t=>t.id===id)||{}).icon||'';
+const HB_TOOLS=[
+ ['move','Déplacer',"Glissez un jeton ou un trajet pour le déplacer. Touchez deux fois un jeton pour changer son étiquette.",'<path d="M12 3v18M3 12h18"/><path d="M9 6l3-3 3 3M9 18l3 3 3-3M6 9l-3 3 3 3M18 9l3 3-3 3"/>'],
+ '|',
+ ['tok:a','Joueur (nous)','Touchez la patinoire pour placer un joueur. Les numéros se suivent.',hbTokSvg('#E63946','#7A1020','#fff','1')],
+ ['tok:b','Adversaire','Touchez la patinoire pour placer un adversaire.',hbTokSvg('#FFFFFF','#0F1B28','#0F1B28','1')],
+ ['tok:g','Gardien','Touchez la patinoire pour placer un gardien.',hbTokSvg('#FFD23F','#6B5300','#111418','G')],
+ ['tok:c','Entraîneur','Touchez la patinoire pour placer un entraîneur.',hbTokSvg('#2F3B48','#0F1B28','#fff','C')],
+ ['tok:puck','Rondelle','Touchez la patinoire pour placer une rondelle.','<circle cx="12" cy="12" r="4.6" fill="currentColor" stroke="none"/>'],
+ ['tok:cone','Cône','Touchez la patinoire pour placer un cône.','<path d="M6.5 18.5h11L12 5z" fill="#E8761A" stroke="#8A3E05" stroke-width="1.4"/>'],
+ '|',
+ ['skate','Patin avant','Glissez pour tracer le trajet (trait plein). Partez d\'un jeton pour y accrocher le trajet.',tIco('skate')],
+ ['back','Patin arrière','Glissez pour tracer le patin arrière (trait plein avec traverses).','<path d="M4 18c5 0 6-10 14-11"/><path d="M14 4l4.5 3-3.5 4"/><path d="M6.3 13.2l2.4 1.6M9 9.6l2.3 1.9"/>'],
+ ['carry','Avec rondelle','Glissez pour tracer le trajet du porteur (trait ondulé).',tIco('carry')],
+ ['pass','Passe','Glissez du passeur vers le receveur (pointillé, en ligne droite).',tIco('pass')],
+ ['shot','Tir','Glissez du tireur vers le filet (double trait).',tIco('shot')],
+ ['pen','Trait libre','Dessinez à main levée.',tIco('pen')],
+ ['zone','Zone','Glissez à partir du centre pour encercler une zone.','<circle cx="12" cy="12" r="7.5" stroke-dasharray="3 2.2"/><circle cx="12" cy="12" r="1.4" fill="currentColor"/>'],
+ ['text','Texte','Touchez l\'endroit où écrire, puis Entrée.',tIco('text')],
+ '|',
+ ['eraser','Gomme','Touchez ou glissez sur un élément pour l\'effacer.',tIco('eraser')],
+];
+const hbCv=$('#hbCv'),hbCtx=hbCv.getContext('2d');
+function hbView(){const W=hbCv.width,H=hbCv.height,fx=HB.half?100:200;const k=Math.min(W/(fx+3),H/88);return{k,ox:(W-fx*k)/2,oy:(H-85*k)/2,fx,W,H}}
+const hbPx=p=>[HB.T.ox+p[0]*HB.T.k,HB.T.oy+p[1]*HB.T.k];
+function hbFt(e){const p=evPt(e,hbCv),T=HB.T;return[(p[0]-T.ox)/T.k,(p[1]-T.oy)/T.k]}
+function hbSlice(pts,f){if(f>=1)return pts;let L=0;const seg=[];for(let i=1;i<pts.length;i++){const d=dist(pts[i-1],pts[i]);seg.push(d);L+=d}
+  let want=L*f;const out=[pts[0]];for(let i=1;i<pts.length;i++){if(want>=seg[i-1]){out.push(pts[i]);want-=seg[i-1]}else{const u=seg[i-1]?want/seg[i-1]:0;out.push([lerp(pts[i-1][0],pts[i][0],u),lerp(pts[i-1][1],pts[i][1],u)]);break}}return out}
+function hbTicks(c,pts,w,k,color){const r=resample(pts,3.4*k);c.save();c.strokeStyle=color;c.lineWidth=w*.8;c.lineCap='round';
+  for(let i=1;i<r.length-2;i++){const a=r[i-1],b=r[i+1],ang=Math.atan2(b[1]-a[1],b[0]-a[0]),q=r[i],l=w*2.1;c.beginPath();c.moveTo(q[0]-Math.sin(ang)*l,q[1]+Math.cos(ang)*l);c.lineTo(q[0]+Math.sin(ang)*l,q[1]-Math.cos(ang)*l);c.stroke()}c.restore()}
+/* trajet commun au tableau et aux vignettes de la librairie */
+function drawPath(c,kind,pts,color,w,k){if(pts.length<2||dist(pts[0],pts[pts.length-1])<2)return;
+  if(kind==='shot')arrow(c,[pts[0],pts[pts.length-1]],{color:color==='#0F1B28'?'#C8102E':color,w:w*1.1,head:true,kind:'double',outline:false});
+  else if(kind==='carry')arrow(c,pts,{color,w,head:true,kind:'wavy',outline:false});
+  else if(kind==='pass')arrow(c,pts,{color,w,head:true,dash:true,outline:false});
+  else if(kind==='pen')arrow(c,pts,{color,w,head:false,smooth:true,outline:false});
+  else{arrow(c,pts,{color,w,head:true,smooth:true,outline:false});if(kind==='back')hbTicks(c,pts,w,k,color)}}
+function hbRender(){if(MODE!=='home')return;fit(hbCv);const c=hbCtx,T=HB.T=hbView(),{k,ox,oy,W,H}=T;
+  c.fillStyle=RINKPAL.arena;c.fillRect(0,0,W,H);
+  const clipW=HB.half?ox+100.6*k:W;
+  c.save();c.beginPath();c.rect(0,0,clipW,H);c.clip();c.translate(ox,oy);c.scale(k,k);drawRinkFt(c);c.restore();
+  c.save();c.beginPath();c.rect(0,0,clipW,H);c.clip();
+  const w=Math.max(1.8,.4*k),its=HB.items.concat(HB.draft?[HB.draft]:[]);
+  let rp=null;if(HB.replay){const el=performance.now()-HB.replay.t0;rp=id=>{const i=HB.replay.order.indexOf(id);return i<0?1:clamp((el-i*HB.replay.per)/HB.replay.per,0,1)}}
+  its.filter(i=>i.t==='zone').forEach(z=>{const p=hbPx(z.c),r=z.r*k;c.beginPath();c.arc(p[0],p[1],r,0,Math.PI*2);c.fillStyle=hexA(z.color,.16);c.fill();
+    c.setLineDash([w*2.2,w*1.6]);c.lineWidth=w*.85;c.strokeStyle=z.color;c.stroke();c.setLineDash([])});
+  its.filter(i=>i.t==='line').forEach(l=>{let pts=l.pts.map(hbPx);if(rp){const f=rp(l.id);if(f<=0)return;pts=hbSlice(pts,f)}drawPath(c,l.kind,pts,l.color,w,k)});
+  const toks=its.filter(i=>i.t==='tok');[...toks.filter(t=>t.k==='cone'),...toks.filter(t=>t.k!=='cone'&&t.k!=='puck'),...toks.filter(t=>t.k==='puck')]
+    .forEach(t=>{trTok(c,t,hbPx([t.x,t.y]),k);if(HB.drag&&HB.drag.it===t){const p=hbPx([t.x,t.y]);c.beginPath();c.arc(p[0],p[1],(t.k==='puck'?1.6:3.3)*k,0,Math.PI*2);c.lineWidth=2;c.strokeStyle='#1D5FC2';c.stroke()}});
+  its.filter(i=>i.t==='text').forEach(x=>{const p=hbPx(x.pos),fs=Math.max(12,2.7*k);c.font=`700 ${fs}px "Barlow Condensed","Arial Narrow",sans-serif`;c.textAlign='center';c.textBaseline='middle';
+    c.lineWidth=Math.max(3,fs*.22);c.strokeStyle='rgba(255,255,255,.92)';c.lineJoin='round';c.strokeText(x.text,p[0],p[1]);c.fillStyle=x.color;c.fillText(x.text,p[0],p[1])});
+  c.restore()}
+/* état, historique, sauvegarde */
+let hbSaveT;
+function hbPersist(){clearTimeout(hbSaveT);hbSaveT=setTimeout(()=>{try{localStorage.setItem('bvh:tableau',JSON.stringify({half:HB.half,items:HB.items}))}catch(e){}},300)}
+function hbSnap(){HB.undo.push(JSON.stringify({half:HB.half,items:HB.items}));if(HB.undo.length>80)HB.undo.shift();HB.redo.length=0;hbHist()}
+function hbRestore(s){const o=JSON.parse(s);HB.items=o.items;if(HB.half!==o.half){HB.half=o.half;hbHalfUI()}}
+function hbUndo(){if(!HB.undo.length)return;HB.redo.push(JSON.stringify({half:HB.half,items:HB.items}));hbRestore(HB.undo.pop());hbChanged()}
+function hbRedo(){if(!HB.redo.length)return;HB.undo.push(JSON.stringify({half:HB.half,items:HB.items}));hbRestore(HB.redo.pop());hbChanged()}
+function hbHist(){const u=$('#hbUndo'),r=$('#hbRedo');if(u)u.disabled=!HB.undo.length;if(r)r.disabled=!HB.redo.length}
+function hbChanged(){hbPersist();hbHist();hbRender()}
+/* aide à la saisie */
+function hbTokAt(f,r=3.2){for(let i=HB.items.length-1;i>=0;i--){const t=HB.items[i];if(t.t==='tok'&&Math.hypot(t.x-f[0],t.y-f[1])<(t.k==='puck'?2:r))return t}return null}
+function hbHit(f){const tk=hbTokAt(f);if(tk)return tk;const p=hbPx(f),k=HB.T.k,tol=Math.max(10,1.4*k);
+  for(let i=HB.items.length-1;i>=0;i--){const it=HB.items[i];
+    if(it.t==='text'&&Math.hypot(it.pos[0]-f[0],it.pos[1]-f[1])<Math.max(3,it.text.length*.75))return it;
+    if(it.t==='line'){const q=it.pts.map(hbPx);for(let j=1;j<q.length;j++)if(distSeg(p,q[j-1],q[j])<tol)return it}
+    if(it.t==='zone'){const d=Math.hypot(it.c[0]-f[0],it.c[1]-f[1]);if(d<it.r)return it}}return null}
+function hbMove(it,dx,dy){const sh=p=>{p[0]+=dx;p[1]+=dy};if(it.t==='tok'){it.x+=dx;it.y+=dy}else if(it.t==='text')sh(it.pos);else if(it.t==='zone')sh(it.c);else it.pts.forEach(sh)}
+function hbNextLabel(k){if(k==='g')return'G';if(k==='c')return'C';if(k!=='a'&&k!=='b')return'';let n=0;HB.items.forEach(t=>{if(t.t==='tok'&&t.k===k&&/^\d+$/.test(t.l))n=Math.max(n,+t.l)});return String(n+1)}
+function hbOverlay(css,val,onOk){const i=$('#hbTxt'),r=$('#hbStage').getBoundingClientRect();i.hidden=false;i.value=val||'';
+  i.style.left=clamp(css[0]-90,6,r.width-196)+'px';i.style.top=clamp(css[1]-20,6,r.height-46)+'px';HB.txt=onOk;i.focus();setTimeout(()=>{if(document.activeElement!==i)i.focus()},30)}
+function hbHideTxt(){const i=$('#hbTxt');if(i){i.hidden=true;i.value=''}HB.txt=null}
+function hbCommitTxt(){const v=$('#hbTxt').value.trim(),fn=HB.txt;hbHideTxt();if(fn)fn(v)}
+const hbCss=f=>{const p=hbPx(f),d=hbCv.width/hbCv.getBoundingClientRect().width;return[p[0]/d,p[1]/d]};
+function hbEraseAt(f){const it=hbHit(f);if(!it)return;if(!HB.erSnap){hbSnap();HB.erSnap=true}HB.items=HB.items.filter(x=>x!==it);hbChanged()}
+/* saisie au doigt et à la souris */
+hbCv.addEventListener('pointerdown',e=>{if(!HB.T)return;if(HB.replay){HB.replay=null}if(HB.txt)hbCommitTxt();e.preventDefault();
+  const f=hbFt(e),tool=HB.tool;hbCv.setPointerCapture(e.pointerId);
+  if(tool==='move'){const it=hbHit(f);if(!it)return;const now=performance.now();
+    if(it.t==='tok'&&it.k!=='puck'&&it.k!=='cone'&&HB.lastTap&&HB.lastTap.it===it&&now-HB.lastTap.t<380){HB.lastTap=null;
+      hbOverlay(hbCss([it.x,it.y]),it.l,v=>{hbSnap();it.l=v.toUpperCase().slice(0,3);hbChanged()});return}
+    HB.lastTap={it,t:now};HB.drag={it,last:f,moved:false};hbRender();return}
+  if(tool.startsWith('tok:')){const k=tool.slice(4);hbSnap();HB.items.push({t:'tok',id:uid(),k,l:hbNextLabel(k),x:f[0],y:f[1]});hbChanged();return}
+  if(tool==='eraser'){HB.erasing=true;HB.erSnap=false;hbEraseAt(f);return}
+  if(tool==='text'){hbOverlay(hbCss(f),'',v=>{if(!v)return;hbSnap();HB.items.push({t:'text',id:uid(),pos:f,text:v,color:HB.color});hbChanged()});return}
+  if(tool==='zone'){HB.draft={t:'zone',id:uid(),color:HB.color,c:f,r:0};return}
+  const tk=hbTokAt(f),s=tk?[tk.x,tk.y]:f,straight=tool==='pass'||tool==='shot';
+  HB.draft={t:'line',id:uid(),kind:tool,color:HB.color,pts:straight?[s,s.slice()]:[s]};hbRender()});
+hbCv.addEventListener('pointermove',e=>{if(!HB.T)return;
+  if(HB.drag){const g=HB.drag,f=hbFt(e);if(!g.moved){if(Math.hypot(f[0]-g.last[0],f[1]-g.last[1])<.4)return;hbSnap();g.moved=true}hbMove(g.it,f[0]-g.last[0],f[1]-g.last[1]);g.last=f;hbRender();return}
+  if(HB.erasing){hbEraseAt(hbFt(e));return}
+  const d=HB.draft;if(!d)return;const f=hbFt(e);
+  if(d.t==='zone')d.r=Math.hypot(f[0]-d.c[0],f[1]-d.c[1]);
+  else if(d.kind==='pass'||d.kind==='shot')d.pts[1]=f;
+  else{const l=d.pts[d.pts.length-1];if(Math.hypot(f[0]-l[0],f[1]-l[1])>.7)d.pts.push(f)}
+  hbRender()});
+function hbUp(){if(HB.drag){const g=HB.drag;HB.drag=null;if(g.moved)hbChanged();else hbRender();return}
+  if(HB.erasing){HB.erasing=false;return}
+  const d=HB.draft;HB.draft=null;if(!d){hbRender();return}
+  if(d.t==='zone'){if(d.r>1.5){hbSnap();HB.items.push(d);hbChanged()}else hbRender();return}
+  let p=d.pts;if(p.length<2){hbRender();return}
+  if(d.kind==='pass'||d.kind==='shot'){const tk=hbTokAt(p[1],3.6);if(tk){const a=p[0],e2=[tk.x,tk.y],L=dist(a,e2);if(L>5)p[1]=[e2[0]-(e2[0]-a[0])/L*2.9,e2[1]-(e2[1]-a[1])/L*2.9]}}
+  else p=smoothPts(resample(p,1.1),2).map(q=>[+q[0].toFixed(2),+q[1].toFixed(2)]);
+  let L=0;for(let i=1;i<p.length;i++)L+=dist(p[i-1],p[i]);if(L<2.5){hbRender();return}
+  d.pts=p;hbSnap();HB.items.push(d);hbChanged()}
+hbCv.addEventListener('pointerup',hbUp);hbCv.addEventListener('pointercancel',hbUp);
+/* rejouer les trajets dans l'ordre */
+function hbReplay(){const lines=HB.items.filter(i=>i.t==='line');if(!lines.length)return toast('Aucun trajet à rejouer');
+  HB.replay={t0:performance.now(),order:lines.map(l=>l.id),per:850};const tick=()=>{if(!HB.replay||MODE!=='home')return;hbRender();
+    if(performance.now()-HB.replay.t0>HB.replay.order.length*HB.replay.per+200){HB.replay=null;hbRender();return}requestAnimationFrame(tick)};requestAnimationFrame(tick)}
+/* barre d'outils */
+function hbToolUI(){$$('#hbBar [data-hbt]').forEach(b=>{const on=b.dataset.hbt===HB.tool;b.classList.toggle('active',on);b.setAttribute('aria-pressed',on)});
+  $$('#hbBar [data-hbc]').forEach(b=>b.classList.toggle('active',b.dataset.hbc===HB.color));
+  const t=HB_TOOLS.find(x=>x[0]===HB.tool),hn=$('#hbHint');hn.innerHTML=t?`<b>${esc(t[1])}</b> · ${esc(t[2])}`:'';hn.classList.remove('off');clearTimeout(HB.hintT);HB.hintT=setTimeout(()=>hn.classList.add('off'),4500);hbCv.style.cursor=HB.tool==='move'?'grab':'crosshair'}
+function hbHalfUI(){$('#hbHalf').classList.toggle('active',HB.half);$('#hbFull').classList.toggle('active',!HB.half);$('#hbStage').style.setProperty('--hb-ar',HB.half?'100/85':'200/85')}
+function hbBuildBar(){const ib=(id,t,ico,extra='')=>`<button class="tool" ${extra} id="${id}" title="${esc(t)}" aria-label="${esc(t)}"><svg viewBox="0 0 24 24">${ico}</svg></button>`;
+  let h='<div class="hb-grp">';HB_TOOLS.forEach(t=>{if(t==='|'){h+='</div><span class="hb-sep"></span><div class="hb-grp">';return}
+    h+=`<button class="tool" data-hbt="${t[0]}" title="${esc(t[1])}" aria-label="${esc(t[1])}" aria-pressed="false"><svg viewBox="0 0 24 24">${t[3]}</svg></button>`});
+  h+='</div><span class="hb-sep"></span><div class="hb-grp">'+HB_COLORS.map(([n,v])=>`<button class="sw" data-hbc="${v}" title="${n}" aria-label="Couleur ${n}" style="background:${v}"></button>`).join('')+'</div><span class="hb-sep"></span><div class="hb-grp">';
+  h+=ib('hbUndo','Annuler (Ctrl+Z)',ACTIONS[0].icon)+ib('hbRedo','Rétablir (Ctrl+Y)',ACTIONS[1].icon)
+    +ib('hbReplay','Rejouer les trajets dans l\'ordre','<path d="M7 5l12 7-12 7z"/>')+ib('hbClear','Tout effacer',ACTIONS[2].icon);
+  h+='</div><span class="hb-sep"></span><div class="hb-grp"><div class="seg hb-seg"><button id="hbHalf">Demi</button><button id="hbFull">Pleine</button></div>'
+    +ib('hbSaves','Tableaux enregistrés','<path d="M5 4h11l3 3v13H5z"/><path d="M8 4v5h7V4M8 20v-6h8v6"/>')
+    +ib('hbFs','Plein écran','<path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/>')+'</div>';
+  $('#hbBar').innerHTML=h;
+  $$('#hbBar [data-hbt]').forEach(b=>b.onclick=()=>{HB.tool=b.dataset.hbt;hbHideTxt();hbToolUI()});
+  $$('#hbBar [data-hbc]').forEach(b=>b.onclick=()=>{HB.color=b.dataset.hbc;hbToolUI()});
+  $('#hbUndo').onclick=hbUndo;$('#hbRedo').onclick=hbRedo;$('#hbReplay').onclick=hbReplay;
+  $('#hbClear').onclick=e=>{if(!HB.items.length)return;armConfirm(e.currentTarget,()=>{hbSnap();HB.items=[];hbChanged();toast('Tableau effacé · Annuler pour revenir')},'?')};
+  $('#hbHalf').onclick=()=>{if(HB.half)return;hbSnap();HB.half=true;hbHalfUI();hbChanged()};$('#hbFull').onclick=()=>{if(!HB.half)return;hbSnap();HB.half=false;hbHalfUI();hbChanged()};
+  $('#hbSaves').onclick=hbSavesToggle;$('#hbFs').onclick=()=>hbFull(!$('#app').classList.contains('hb-full'));$('#hbExitFull').onclick=()=>hbFull(false)}
+/* tableaux enregistrés */
+const hbList=()=>{try{return JSON.parse(localStorage.getItem('bvh:tableaux')||'[]')}catch(e){return[]}};
+const hbStore=l=>{try{localStorage.setItem('bvh:tableaux',JSON.stringify(l))}catch(e){toast('Enregistrement impossible sur cet appareil')}};
+function hbSavesToggle(){const p=$('#hbPop');if(!p.hidden){p.hidden=true;return}hbSavesRender();p.hidden=false;setTimeout(()=>{const n=$('#hbName');n&&n.focus()},30)}
+function hbSavesRender(){const l=hbList();const p=$('#hbPop');
+  p.innerHTML=`<div class="row" style="justify-content:space-between"><b class="h">Tableaux enregistrés</b><button class="btn sm" id="hbPopX" aria-label="Fermer">✕</button></div>
+   <div class="row" style="flex-wrap:nowrap"><input class="inp" id="hbName" placeholder="Nom (ex. Sortie de zone vs 2-1-2)" maxlength="60"><button class="btn sm primary" id="hbSaveGo">Enregistrer</button></div>
+   <div class="list">${l.length?l.map(s=>`<div class="item" style="cursor:default"><span class="n">${esc(s.name)}</span><span class="t">${esc(s.date||'')}</span><button class="btn sm" data-hbo="${s.id}">Ouvrir</button><button class="btn sm danger" data-hbd="${s.id}" aria-label="Supprimer ${esc(s.name)}">✕</button></div>`).join(''):'<p class="muted">Aucun tableau enregistré. Dessinez, puis donnez-lui un nom.</p>'}</div>
+   <button class="btn sm" id="hbNew">Nouveau tableau vide</button>`;
+  $('#hbPopX').onclick=()=>p.hidden=true;
+  const save=()=>{const name=$('#hbName').value.trim();if(!name)return toast('Donnez un nom au tableau');if(!HB.items.length)return toast('Le tableau est vide');
+    const l=hbList();const ex=l.find(s=>s.name===name);const d=new Date().toISOString().slice(0,10);const data={id:ex?ex.id:'tb-'+uid(),name,date:d,half:HB.half,items:clone(HB.items)};
+    if(ex)Object.assign(ex,data);else l.unshift(data);hbStore(l);hbSavesRender();toast('Tableau enregistré : '+name)};
+  $('#hbSaveGo').onclick=save;$('#hbName').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')save()});
+  $$('[data-hbo]',p).forEach(b=>b.onclick=()=>{const s=hbList().find(x=>x.id===b.dataset.hbo);if(!s)return;hbSnap();HB.items=clone(s.items);HB.half=!!s.half;hbHalfUI();hbChanged();p.hidden=true;toast('Tableau ouvert : '+s.name)});
+  $$('[data-hbd]',p).forEach(b=>b.onclick=()=>armConfirm(b,()=>{hbStore(hbList().filter(x=>x.id!==b.dataset.hbd));hbSavesRender()},'?'));
+  $('#hbNew').onclick=()=>{if(HB.items.length){hbSnap();HB.items=[];hbChanged()}p.hidden=true}}
+/* plein écran (banc, tablette) */
+function hbFull(on){$('#app').classList.toggle('hb-full',on);
+  if(on){try{const r=document.documentElement.requestFullscreen&&document.documentElement.requestFullscreen();r&&r.catch&&r.catch(()=>{})}catch(e){}try{navigator.wakeLock&&navigator.wakeLock.request('screen').then(w=>HB.wake=w).catch(()=>{})}catch(e){}}
+  else{try{document.fullscreenElement&&document.exitFullscreen().catch(()=>{})}catch(e){}try{HB.wake&&HB.wake.release()}catch(e){}}
+  requestAnimationFrame(hbRender)}
+document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement&&$('#app').classList.contains('hb-full'))hbFull(false)});
+
+/* ================= librairie de drills ================= */
+const LIB={cat:'',q:''};
+function libItems(){const seen=new Set(),out=[];PRATIQUES.forEach((p,pi)=>p.items.forEach(d=>{if(d.pause||seen.has(d.id))return;seen.add(d.id);out.push({d,pi})}));return out}
+function drawDrillThumb(cv,d){fit(cv);const c=cv.getContext('2d'),W=cv.width,H=cv.height;c.fillStyle=RINKPAL.arena;c.fillRect(0,0,W,H);
+  const k=Math.min(W/100,H/85)*.96,ox=(W-100*k)/2,oy=(H-85*k)/2,px=p=>[ox+p[0]*k,oy+p[1]*k];
+  c.save();c.beginPath();c.rect(0,0,ox+100.6*k,H);c.clip();c.translate(ox,oy);c.scale(k,k);drawRinkFt(c);c.restore();
+  const w=Math.max(1.2,.42*k);d.moves.forEach(m=>drawPath(c,m.k,m.dense.map(px),TR_INK,w,k));
+  [...d.tokens.filter(t=>t.k==='cone'),...d.tokens.filter(t=>t.k!=='cone'&&t.k!=='puck'),...d.tokens.filter(t=>t.k==='puck')].forEach(t=>trTok(c,t,px([t.fx,t.fy]),k))}
+function libRender(){const all=libItems();const q=LIB.q.toLowerCase();
+  const list=all.filter(({d})=>(!LIB.cat||d.cat===LIB.cat)&&(!q||(d.title+' '+d.sub+' '+(d.org||'')).toLowerCase().includes(q)));
+  const v=$('#libView');
+  v.innerHTML=`<div class="lib-wrap"><div class="lib-head"><div><h2 class="lib-title">Librairie de drills</h2><p class="muted">${all.length} exercices · ouvrez la fiche complète ou placez le schéma sur le tableau pour l'expliquer.</p></div>
+    <input class="inp lib-q" id="libQ" placeholder="Rechercher un exercice" value="${esc(LIB.q)}" autocomplete="off"></div>
+    <div class="chips">${[['','Tous'],...Object.entries(TR_CAT).map(([k,v])=>[k,v[0]])].map(([k,n])=>`<button class="chip${LIB.cat===k?' active':''}" data-libc="${k}">${esc(n)}</button>`).join('')}</div>
+    <div class="lib-grid">${list.map(({d,pi})=>{const cat=TR_CAT[d.cat];return `<article class="lib-card"><canvas data-libth="${d.id}" aria-label="Schéma : ${esc(d.title)}"></canvas>
+      <div class="lib-body"><div class="lib-meta"><span class="tr-cat" style="--c:${cat[1]}">${cat[0]}</span><span class="t">${d.start!=null&&!PRATIQUES[pi].kind?(d.end-d.start)+' min':esc(d.dur||'')}</span></div>
+      <h3>${esc(d.title)}</h3><p class="muted">${esc(d.sub)} · ${esc(PRATIQUES[pi].name)}</p>
+      <div class="lib-acts"><button class="btn sm primary" data-libo="${d.id}" data-pi="${pi}">Ouvrir la fiche</button><button class="btn sm" data-libb="${d.id}">Sur le tableau</button></div></div></article>`}).join('')||'<p class="muted">Aucun exercice pour ce filtre.</p>'}</div></div>`;
+  const qi=$('#libQ');qi.oninput=e=>{LIB.q=e.target.value;const pos=e.target.selectionStart;libRender();const n=$('#libQ');n.focus();n.setSelectionRange(pos,pos)};
+  $$('[data-libc]',v).forEach(b=>b.onclick=()=>{LIB.cat=b.dataset.libc;libRender()});
+  $$('[data-libo]',v).forEach(b=>b.onclick=()=>libOpen(b.dataset.libo,+b.dataset.pi));
+  $$('[data-libb]',v).forEach(b=>b.onclick=()=>libToBoard(TR_BYID[b.dataset.libb]));
+  requestAnimationFrame(()=>$$('[data-libth]',v).forEach(cv=>drawDrillThumb(cv,TR_BYID[cv.dataset.libth])))}
+function libOpen(id,pi){TR.pi=pi;try{localStorage.setItem('bvh:trprat',pi)}catch(e){}const d=trItems(PRATIQUES[pi]).find(x=>x.id===id)||TR_BYID[id];
+  TR.di=id;TR.playing=false;TR.rest=true;TR.t=d.total;setMode('train')}
+function libToBoard(d){if(!d)return;hbSnap();HB.half=true;
+  const toks=d.tokens.map(t=>({t:'tok',id:uid(),k:t.k,l:t.k==='g'?'G':(t.l||''),x:+t.fx.toFixed(2),y:+t.fy.toFixed(2)}));
+  const lines=d.moves.map(m=>({t:'line',id:uid(),kind:m.k,color:'#0F1B28',pts:(m.k==='pass'||m.k==='shot')?[m.ft[0],m.ft[m.ft.length-1]]:resample(m.dense,1.1)}));
+  HB.items=[...lines,...toks];setMode('home');hbHalfUI();hbChanged();toast('Exercice placé sur le tableau : '+d.title)}
+
+/* ================= navigation ================= */
+function setMode(m){MODE=m;const app=$('#app');['home','train','lib','create'].forEach(x=>app.classList.toggle(x,x===m));if(m!=='home')app.classList.remove('hb-full');
+  $$('.mainnav [data-mode]').forEach(b=>{const on=b.dataset.mode===m;b.classList.toggle('active',on);if(on)b.setAttribute('aria-current','page');else b.removeAttribute('aria-current')});
+  $('#goHome').classList.toggle('active',m==='home');
+  if(m!=='video'){try{pauseAll()}catch(e){}}
+  if(m==='train'){trRenderList();trDetail();trSync();requestAnimationFrame(trRender)}else{TR.playing=false;trSync();trCloseView();trHideText()}
+  if(m==='video')requestAnimationFrame(drawRinkPanel);
+  if(m==='home')requestAnimationFrame(hbRender);else{hbHideTxt();$('#hbPop').hidden=true}
+  if(m==='lib')libRender();
+  window.scrollTo(0,0)}
+function hbInit(){
+  try{const o=JSON.parse(localStorage.getItem('bvh:tableau')||'null');if(o&&Array.isArray(o.items)){HB.items=o.items;HB.half=!!o.half}}catch(e){}
+  hbBuildBar();hbHalfUI();hbToolUI();hbHist();
+  $$('.mainnav [data-mode]').forEach(b=>b.onclick=()=>setMode(b.dataset.mode));$('#goHome').onclick=()=>setMode('home');
+  $('#crGoBoard').onclick=()=>setMode('home');$('#crGoLib').onclick=()=>setMode('lib');
+  const ti=$('#hbTxt');ti.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')hbCommitTxt();if(e.key==='Escape')hbHideTxt()});ti.addEventListener('blur',()=>{if(HB.txt)hbCommitTxt()});
+  document.addEventListener('keydown',e=>{if(MODE!=='home')return;const tg=e.target;if(tg&&(tg.tagName==='INPUT'||tg.tagName==='SELECT'||tg.tagName==='TEXTAREA'))return;
+    const k=e.key;if((e.ctrlKey||e.metaKey)&&(k==='z'||k==='Z')){e.preventDefault();e.shiftKey?hbRedo():hbUndo();return}
+    if((e.ctrlKey||e.metaKey)&&(k==='y'||k==='Y')){e.preventDefault();hbRedo();return}
+    if(k==='Escape'){if(!$('#hbPop').hidden){$('#hbPop').hidden=true;return}if(HB.draft){HB.draft=null;hbRender();return}if($('#app').classList.contains('hb-full')){hbFull(false);return}HB.tool='move';hbToolUI()}});
+  new ResizeObserver(()=>hbRender()).observe($('#hbStage'));
+  setMode('home');if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>hbRender())}
 
 /* ================= démarrage ================= */
 (function init(){
@@ -1548,7 +1842,7 @@ function trInit(){trLoad();layInit();trBuildTools();PRATIQUES.forEach(p=>p.items
   if(P.rink.half==null)P.rink.half=true;
   setTool('skate');afterLoad();
   const s=cur();if(s){s.t=P.current==='demo'&&!loaded?3.2:s.t;S.lastT=s.t;S.selMarker=(markerAt(s.t)||{}).id||null;renderSeq()}
-  trInit();
+  trInit();hbInit();
   requestAnimationFrame(frame);
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>drawRinkPanel());
 })();

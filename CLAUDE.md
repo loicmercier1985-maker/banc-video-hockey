@@ -5,6 +5,7 @@
 - À chaque publication : changer `VERSION` dans `sw.js` (format `bvh-AAAA-MM-JJx`) pour que les appareils reçoivent la mise à jour.
 - Interface et contenu en français (Québec). Utilisateur : entraîneur M17 B, pratiques sur demi-glace partagée.
 - Données des utilisateurs : seulement dans le navigateur (localStorage `bvh:*`, IndexedDB `bvh-entrainements`). Ne jamais casser la compatibilité de ces clés sans migration.
+- Navigation : `setMode('home'|'train'|'video'|'lib'|'create')`. Accueil = planche à dessin (`HB`, clés `bvh:tableau` et `bvh:tableaux`); librairie = `libRender()`.
 - Contenu des pratiques et de la banque : tableau `PRATIQUES` dans `index.html` (repère 610 × 520, ligne rouge à gauche, filet à droite).
 - Vidéos YouTube : intégrées (youtube-nocookie) seulement hors de claude.ai; liens sinon.
 - Tester le JS après modification : extraire le bloc `<script>` principal et le passer à `new Function()` dans Node.
