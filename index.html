@@ -447,6 +447,8 @@ button{cursor:pointer}
 .lib-thumb:focus-visible{outline:3px solid var(--blue);outline-offset:-3px}
 @media (hover:none){.lib-go{opacity:1;top:auto;bottom:10px;transform:translateX(-50%);font-size:13px;padding:6px 12px}}
 @media (prefers-reduced-motion: reduce){.lib-thumb canvas,.lib-go{transition:none}}
+.tr-ytadd{margin-top:2px}
+.tr-ytadd .btn{color:var(--blue)}
 </style>
 </head>
 <body>
@@ -1572,7 +1574,7 @@ function trPartial(m,f){if(f>=1)return m.dense;const r=trAt(m,f);return m.dense.
 
 /* état et sauvegarde */
 const TR={pi:0,di:null,t:0,playing:false,speed:1,last:0,rest:true,tool:null,color:'#FFD23F',draft:null,R:null,raf:0,textAt:null};
-let TRS={notes:{},annots:{},meta:{},plans:{}};
+let TRS={notes:{},annots:{},meta:{},plans:{},vids:{}};
 function trLoad(){try{const o=JSON.parse(localStorage.getItem('bvh:entrainements')||'null');if(o&&typeof o==='object')TRS=Object.assign(TRS,o)}catch(e){}}
 let trSaveT;function trSave(){clearTimeout(trSaveT);trSaveT=setTimeout(()=>{try{localStorage.setItem('bvh:entrainements',JSON.stringify(TRS))}catch(e){toast('Sauvegarde des notes impossible sur cet appareil')}},400)}
 const trPrat=()=>PRATIQUES[TR.pi];
@@ -1688,7 +1690,7 @@ function trRenderList(){const pr=trPrat();const m=TRS.meta[pr.id]||{};const its=
   const rs=$('#trReset');if(rs)rs.onclick=e=>armConfirm(e.currentTarget,()=>{delete TRS.plans[pr.id];trSave();trSelect(trItems(pr).some(d=>d.id===TR.di)?TR.di:trItems(pr).find(d=>!d.pause).id);toast("Pratique d'origine rétablie")},'Confirmer ?');
   $('#trExp').onclick=()=>saveFile('entrainements-banc-video-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({app:'bvh-entrainements',version:1,exported:new Date().toISOString(),data:TRS}),'application/json');
   $('#trImp').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
-    try{const o=JSON.parse(await f.text());if(!o||o.app!=='bvh-entrainements'||!o.data)throw 0;TRS=Object.assign({notes:{},annots:{},meta:{},plans:{}},o.data);trSave();trRenderList();trDetail();trRender();toast('Entraînements importés')}
+    try{const o=JSON.parse(await f.text());if(!o||o.app!=='bvh-entrainements'||!o.data)throw 0;TRS=Object.assign({notes:{},annots:{},meta:{},plans:{},vids:{}},o.data);trSave();trRenderList();trDetail();trRender();toast('Entraînements importés')}
     catch(err){toast("Ce fichier n'est pas une sauvegarde d'entraînements valide.")}};
   $('#trPrat').onchange=e=>{TR.pi=+e.target.value;try{localStorage.setItem('bvh:trprat',TR.pi)}catch(x){}trSelect(trItems(trPrat()).find(d=>!d.pause).id)};
   if(!isB)[['trDate','date'],['trArena','arena']].forEach(([id,key])=>$('#'+id).addEventListener('input',e=>{(TRS.meta[pr.id]=TRS.meta[pr.id]||{})[key]=e.target.value;trSave()}));
@@ -1710,12 +1712,15 @@ function trDetail(){const d=trDrill();const cat=TR_CAT[d.cat];const yt='https://
   ${d.errs?`<div class="tr-blk"><h3 class="h">Erreurs fréquentes</h3><ul class="tr-pts tr-errs">${d.errs.map(s=>`<li>${esc(s)}</li>`).join('')}</ul></div>`:''}
   ${d.prog?`<div class="tr-blk"><h3 class="h">Progression</h3><p>${esc(d.prog)}</p></div>`:''}
   ${d.mat?`<div class="tr-blk"><h3 class="h">Matériel</h3><p class="muted">${esc(d.mat)}</p></div>`:''}
-  ${d.vids?`<div class="tr-blk"><h3 class="h">Vidéos de référence</h3><div class="tr-vids">${d.vids.map(v=>trVidCard(v)).join('')}</div></div>`:''}
+  <div class="tr-blk"><h3 class="h">Vidéos de référence</h3>${trAllVids(d).length?`<div class="tr-vids">${trAllVids(d).map(v=>trVidCard(v)).join('')}</div>`:''}
+    <div class="cr-ytrow tr-ytadd"><input class="inp" id="trYtIn" placeholder="Coller un lien YouTube (vidéo ou Short)" aria-label="Lien YouTube à ajouter"><button type="button" class="btn" id="trYtAdd" title="Ajouter ce lien YouTube" aria-label="Ajouter ce lien YouTube">+</button></div></div>
   <div class="tr-blk"><h3 class="h">Photos et vidéos</h3>
     <div class="tr-drop" id="trDrop"><span class="btn sm filebtn">+ Ajouter<input type="file" class="fileov" id="trFile" accept="image/*,video/*" multiple aria-label="Ajouter une photo ou une vidéo"></span><span class="muted">ou glissez un fichier ici</span></div>
     <div class="tr-thumbs" id="trThumbs"></div>
     <a class="tr-link" href="${yt}" target="_blank" rel="noopener">Exemples vidéo de cet exercice sur YouTube ↗</a></div>
   <div class="tr-blk"><h3 class="h">Notes de l'entraîneur</h3><textarea class="inp tr-notes" id="trNotes" placeholder="Ce qui a fonctionné, ajustements pour la prochaine fois…">${esc(TRS.notes[d.id]||'')}</textarea></div>`;
+  const ya=$('#trYtAdd');if(ya){ya.onclick=trYtAdd;$('#trYtIn').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){e.preventDefault();trYtAdd()}})}
+  $$('[data-ytrm]',$('#trDetail')).forEach(b=>b.onclick=()=>armConfirm(b,()=>{const L=(TRS.vids||{})[d.id]||[];TRS.vids[d.id]=L.filter(x=>x!==b.dataset.ytrm);trSave();trDetail()},'Retirer ?'));
   $$('[data-ytp]',$('#trDetail')).forEach(b=>b.onclick=()=>{const id=b.dataset.ytp;const f=b.parentElement;
     f.innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${id}?autoplay=1&rel=0&playsinline=1" title="Vidéo YouTube" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`});
   const cf=$('#trClipFr');if(cf){const play=()=>{const c=d.clip;cf.innerHTML=`<iframe src="https://www.youtube-nocookie.com/embed/${c.id}?start=${c.start}&end=${c.end}&autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1" title="Séquence de l'exercice" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>`};
@@ -1726,9 +1731,15 @@ function trClipHtml(c){const full='https://www.youtube.com/watch?v='+c.id;
     <div class="meta">${TR_EMBED?'<button class="btn sm" id="trClipAgain" style="align-self:flex-start">↺ Rejouer la séquence</button>':`<a href="${full}&t=${c.start}s" target="_blank" rel="noopener">Voir la séquence (${c.start}–${c.end} s) sur YouTube ↗</a>`}<span>${esc(c.by||'')}</span><a href="${full}" target="_blank" rel="noopener">Vidéo complète sur YouTube ↗</a></div></div></div>`}
 /* vidéos YouTube : intégrées dans l'app autonome, en lien dans la copie Claude (les intégrations y sont bloquées) */
 const TR_EMBED=!window.claude&&!/claude/.test(location.hostname)&&location.protocol==='https:';
+/* vidéos YouTube d'un exercice : celles de la fiche + celles ajoutées par l'entraîneur (TRS.vids) */
+const trUserVids=d=>((TRS.vids||{})[d.id]||[]).map(id=>({id,title:'Vidéo ajoutée',by:'YouTube',user:true}));
+const trAllVids=d=>{const seen=new Set();return(d.vids||[]).concat(trUserVids(d)).filter(v=>!seen.has(v.id)&&seen.add(v.id))};
+function trYtAdd(){const d=trDrill(),i=$('#trYtIn');if(!d||!i)return;const yid=crYt(i.value.trim());if(!yid)return toast('Lien YouTube non reconnu');
+  if(trAllVids(d).some(v=>v.id===yid))return toast('Cette vidéo est déjà dans la fiche');
+  if(!TRS.vids)TRS.vids={};(TRS.vids[d.id]=TRS.vids[d.id]||[]).push(yid);trSave();trDetail();toast('Vidéo ajoutée à la fiche');setTimeout(()=>{const n=$('#trYtIn');n&&n.focus()},30)}
 function trVidCard(v){const url='https://www.youtube.com/watch?v='+v.id;
   return `<div class="tr-vid">${TR_EMBED?`<div class="fr"><button data-ytp="${v.id}" aria-label="Lire « ${esc(v.title)} »"><img src="https://i.ytimg.com/vi/${v.id}/hqdefault.jpg" alt="" loading="lazy"><span class="pl">▶</span></button></div>`:''}
-    <div class="meta"><b>${esc(v.title)}</b><span>${esc(v.by)}${v.note?' · '+esc(v.note):''}</span><a href="${url}" target="_blank" rel="noopener">Ouvrir sur YouTube ↗</a></div></div>`}
+    <div class="meta"><b>${esc(v.title)}</b><span>${esc(v.by)}${v.note?' · '+esc(v.note):''}</span><span class="row" style="gap:10px"><a href="${url}" target="_blank" rel="noopener">Ouvrir sur YouTube ↗</a>${v.user?`<button type="button" class="btn sm danger" data-ytrm="${v.id}">Retirer</button>`:''}</span></div></div>`}
 function trSelect(id){const d=trItems(trPrat()).find(x=>x.id===id);if(!d||d.pause)return;TR.di=id;TR.playing=false;TR.rest=true;TR.t=d.total;TR.draft=null;trHideText();trCloseView();
   try{localStorage.setItem('bvh:trdrill',id)}catch(e){}trRenderList();trDetail();trSync();trRender();
   const it=$(`#trItems [data-tri="${id}"]`);it&&it.scrollIntoView({block:'nearest',inline:'nearest'})}
@@ -2178,7 +2189,7 @@ function libMatch(d){if(!LIB.cat)return true;return LIB.cat.startsWith('tag:')?d
 async function libVidIds(){const ids=new Set();try{const db=await trDB();await new Promise(res=>{const rq=db.transaction('media').objectStore('media').openCursor();
   rq.onsuccess=()=>{const c=rq.result;if(c){if(String(c.value.type||'').startsWith('video'))ids.add(c.value.drill);c.continue()}else res()};rq.onerror=()=>res()})}catch(e){}
   trMem.forEach(m=>{if(String(m.type).startsWith('video'))ids.add(m.drill)});return ids}
-const libHasYt=d=>!!(d.clip||(d.vids&&d.vids.length));
+const libHasYt=d=>!!(d.clip||trAllVids(d).length);
 function drawDrillThumb(cv,d){fit(cv);const c=cv.getContext('2d'),W=cv.width,H=cv.height;c.fillStyle=RINKPAL.arena;c.fillRect(0,0,W,H);
   const k=Math.min(W/100,H/85)*.96,ox=(W-100*k)/2,oy=(H-85*k)/2,px=p=>[ox+p[0]*k,oy+p[1]*k];
   c.save();c.beginPath();c.rect(0,0,ox+100.6*k,H);c.clip();c.translate(ox,oy);c.scale(k,k);drawRinkFt(c);c.restore();
@@ -2213,7 +2224,7 @@ function libRender(){const all=libItems();const q=LIB.q.toLowerCase();const isS=
 async function libVideo(d){if(!d)return;const files=(await trMediaList(d.id)).filter(m=>String(m.type).startsWith('video'));const src=[];
   files.forEach(m=>src.push({kind:'file',m,label:m.name,sub:'Vidéo importée'}));
   if(d.clip)src.push({kind:'yt',id:d.clip.id,start:d.clip.start,end:d.clip.end,label:`Séquence de l'exercice (${d.clip.start}–${d.clip.end} s)`,sub:d.clip.by||'YouTube'});
-  (d.vids||[]).forEach(x=>src.push({kind:'yt',id:x.id,label:x.title,sub:x.by}));
+  trAllVids(d).forEach(x=>src.push({kind:'yt',id:x.id,label:x.title,sub:x.by}));
   if(!src.length)return toast('Aucune vidéo pour cet exercice');
   const box=$('#libModal');box.hidden=false;
   box.innerHTML=`<div class="lm-card" role="dialog" aria-modal="true" aria-label="Vidéo : ${esc(d.title)}"><div class="lm-head"><b>${esc(d.title)}</b><button class="btn sm" id="lmX">Fermer</button></div>
