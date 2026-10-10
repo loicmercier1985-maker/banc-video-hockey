@@ -1686,12 +1686,11 @@ function trRenderList(){const pr=trPrat();const m=TRS.meta[pr.id]||{};const its=
     <div class="tr-eyebrow">${esc(pr.groupe)} · ${esc(pr.glace)}${isB?'':' · '+its.reduce((a,d)=>a+(d.end-d.start),0)+' min'}</div><b class="tr-pname">${esc(pr.name)}</b><span class="tr-theme">${esc(pr.theme)}</span>
     ${isB?'':`<div class="grid2"><label class="field">Date<input type="date" id="trDate" value="${esc(m.date||'')}"></label><label class="field">Aréna<input id="trArena" value="${esc(m.arena||'')}" placeholder="À compléter" autocomplete="off"></label></div>`}
     <p class="muted">${esc(pr.objectifs)}</p>
-    <div class="row"><button class="btn sm" id="trExp" title="Notes, annotations, dates et arénas (sans les médias)">Exporter les entraînements</button><span class="btn sm filebtn">Importer<input type="file" class="fileov" id="trImp" accept=".json,application/json" aria-label="Importer des entraînements"></span>${!isB&&TRS.plans&&TRS.plans[pr.id]?'<button class="btn sm" id="trReset">Rétablir la pratique d\'origine</button>':''}</div>`;
+    <div class="row"><button class="btn sm" id="trExp" title="Notes, annotations, dates et arénas (sans les médias)">Exporter (sauvegarde complète)</button><span class="btn sm filebtn">Importer<input type="file" class="fileov" id="trImp" accept=".json,application/json" aria-label="Importer des entraînements"></span>${!isB&&TRS.plans&&TRS.plans[pr.id]?'<button class="btn sm" id="trReset">Rétablir la pratique d\'origine</button>':''}</div>`;
   const rs=$('#trReset');if(rs)rs.onclick=e=>armConfirm(e.currentTarget,()=>{delete TRS.plans[pr.id];trSave();trSelect(trItems(pr).some(d=>d.id===TR.di)?TR.di:trItems(pr).find(d=>!d.pause).id);toast("Pratique d'origine rétablie")},'Confirmer ?');
-  $('#trExp').onclick=()=>saveFile('entrainements-banc-video-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({app:'bvh-entrainements',version:1,exported:new Date().toISOString(),data:TRS}),'application/json');
+  $('#trExp').onclick=bvhExport;
   $('#trImp').onchange=async e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
-    try{const o=JSON.parse(await f.text());if(!o||o.app!=='bvh-entrainements'||!o.data)throw 0;TRS=Object.assign({notes:{},annots:{},meta:{},plans:{},vids:{}},o.data);trSave();trRenderList();trDetail();trRender();toast('Entraînements importés')}
-    catch(err){toast("Ce fichier n'est pas une sauvegarde d'entraînements valide.")}};
+    try{bvhImport(JSON.parse(await f.text()))}catch(err){toast("Ce fichier n'est pas une sauvegarde d'entraînements valide.")}};
   $('#trPrat').onchange=e=>{TR.pi=+e.target.value;try{localStorage.setItem('bvh:trprat',TR.pi)}catch(x){}trSelect(trItems(trPrat()).find(d=>!d.pause).id)};
   if(!isB)[['trDate','date'],['trArena','arena']].forEach(([id,key])=>$('#'+id).addEventListener('input',e=>{(TRS.meta[pr.id]=TRS.meta[pr.id]||{})[key]=e.target.value;trSave()}));
   let n=0;its.forEach(d=>{if(!d.pause)d.n=++n});
@@ -1805,6 +1804,22 @@ const trUp=()=>{const a=TR.draft;if(!a)return;TR.draft=null;const R=TR.R;let ok;
   if(ok){const d=trDrill();(TRS.annots[d.id]=TRS.annots[d.id]||[]).push(a);trSave()}trRender()};
 trCv.addEventListener('pointerup',trUp);trCv.addEventListener('pointercancel',trUp);
 
+/* sauvegarde complète : notes, annotations, pratiques modifiées, mes exercices, tableaux enregistrés, tableau en cours */
+function bvhExport(){let tb=null;try{tb=JSON.parse(localStorage.getItem('bvh:tableau')||'null')}catch(e){}
+  const n=MES.defs.length,t=hbList().length;
+  saveFile('banc-video-sauvegarde-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify({app:'bvh-entrainements',version:2,exported:new Date().toISOString(),data:TRS,mesdrills:MES.defs,tableaux:hbList(),tableau:tb}),'application/json');
+  setTimeout(()=>toast(`Sauvegarde : notes, ${n} exercice${n>1?'s':''} créé${n>1?'s':''}, ${t} tableau${t>1?'x':''} enregistré${t>1?'s':''}`),2800)}
+function bvhImport(o){if(!o||o.app!=='bvh-entrainements'||!o.data)throw 0;
+  const D=o.data,b={notes:{},annots:{},meta:{},plans:{},vids:{}};
+  TRS=Object.assign(b,TRS);['notes','annots','meta','plans'].forEach(k=>Object.assign(TRS[k],D[k]||{}));
+  Object.entries(D.vids||{}).forEach(([id,l])=>{TRS.vids[id]=[...new Set((TRS.vids[id]||[]).concat(l))]});trSave();
+  let nm=0,nt=0;
+  if(Array.isArray(o.mesdrills)){o.mesdrills.forEach(d=>{if(!d||!d.id)return;const i=MES.defs.findIndex(x=>x.id===d.id);if(i>=0)MES.defs[i]=d;else{MES.defs.push(d);nm++}});mesStore();mesSync()}
+  if(Array.isArray(o.tableaux)){const l=hbList();o.tableaux.forEach(x=>{if(!x||!x.id)return;const i=l.findIndex(y=>y.id===x.id);if(i>=0)l[i]=x;else{l.push(x);nt++}});hbStore(l)}
+  if(o.tableau&&Array.isArray(o.tableau.items)&&!HB.items.length){hbLoad(o.tableau);hbPersist()}
+  if(!PRATIQUES[TR.pi])TR.pi=0;if(!trItems(trPrat()).some(d=>d.id===TR.di))TR.di=trItems(trPrat()).find(d=>!d.pause).id;
+  if(MODE==='train'){trRenderList();trDetail();trRender()}if(MODE==='lib')libRender();if(MODE==='create')crRender();if(MODE==='home'){hbAnimUI();hbRender()}
+  toast(`Importé : notes et annotations, ${nm} nouvel${nm>1?'s':''} exercice${nm>1?'s':''}, ${nt} tableau${nt>1?'x':''}`)}
 function trInit(){trLoad();layInit();trBuildTools();PRATIQUES.forEach(p=>p.items.forEach(trPrep));
   let di=null;try{di=localStorage.getItem('bvh:trdrill');const pi=+localStorage.getItem('bvh:trprat');if(PRATIQUES[pi])TR.pi=pi}catch(e){}
   const pr=trPrat();TR.di=trItems(pr).some(d=>d.id===di&&!d.pause)?di:trItems(pr).find(d=>!d.pause).id;TR.t=trDrill().total;
