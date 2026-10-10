@@ -1,6 +1,6 @@
 /* Banc Vidéo Hockey — fonctionnement hors ligne.
    Changer VERSION à chaque mise en ligne d'une nouvelle version de l'app. */
-const VERSION='bvh-2026-10-10f';
+const VERSION='bvh-2026-10-10g';
 const CORE=['./','./index.html','./manifest.webmanifest','./icons/icon-192.png','./icons/icon-512.png','./icons/icon-maskable-512.png','./icons/apple-touch-icon.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(VERSION).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==VERSION).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
