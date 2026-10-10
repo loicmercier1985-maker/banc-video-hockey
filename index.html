@@ -425,6 +425,14 @@ button{cursor:pointer}
 .cr-tag{align-self:end;padding-bottom:8px}
 .cr-item .n{white-space:normal}
 @media (max-width:860px){.cr-grid{grid-template-columns:1fr}.cr-prev{position:static}.hb-anim .ha-name{width:130px}}
+
+.hb-tolib{border:1px solid var(--line);border-radius:8px;padding:8px 10px;background:var(--ice);display:flex;flex-direction:column;gap:6px}
+.hb-tolib .muted{margin:0}
+.cr-saved{display:flex;align-items:center;gap:10px;flex-wrap:wrap;padding:8px 10px;border-radius:8px;background:color-mix(in srgb,var(--ok) 14%,transparent);color:var(--ink);font-size:13.5px}
+.hb-pop{width:min(440px,calc(100% - 20px))}
+.hb-pop .row:first-child{flex-wrap:nowrap}
+.hb-pop .item{flex-wrap:wrap}
+.hb-pop .item .n{flex:1 1 150px;white-space:normal}
 </style>
 </head>
 <body>
@@ -604,6 +612,7 @@ button{cursor:pointer}
           <label class="field">Vidéo YouTube (lien, facultatif)<input name="yt" id="crYt" placeholder="https://www.youtube.com/watch?v=…"></label>
           <div class="grid2"><label class="field">Séquence : début (s)<input name="ys" id="crYs" type="number" min="0" step="1"></label><label class="field">Fin (s)<input name="ye" id="crYe" type="number" min="0" step="1"></label></div>
           <div class="row"><button class="btn primary" type="submit">Enregistrer dans la librairie</button></div>
+          <div class="cr-saved" id="crSaved" hidden></div>
         </form>
       </div>
       <h3 class="h">Mes exercices</h3>
@@ -2053,9 +2062,11 @@ const hbList=()=>{try{return JSON.parse(localStorage.getItem('bvh:tableaux')||'[
 const hbStore=l=>{try{localStorage.setItem('bvh:tableaux',JSON.stringify(l))}catch(e){toast('Enregistrement impossible sur cet appareil')}};
 function hbSavesToggle(){const p=$('#hbPop');if(!p.hidden){p.hidden=true;return}hbSavesRender();p.hidden=false;setTimeout(()=>{const n=$('#hbName');n&&n.focus()},30)}
 function hbSavesRender(){const l=hbList();const p=$('#hbPop');
-  p.innerHTML=`<div class="row" style="justify-content:space-between"><b class="h">Tableaux enregistrés</b><button class="btn sm" id="hbPopX" aria-label="Fermer">✕</button></div>
-   <div class="row" style="flex-wrap:nowrap"><input class="inp" id="hbName" placeholder="Nom (ex. Sortie de zone vs 2-1-2)" maxlength="60"><button class="btn sm primary" id="hbSaveGo">Enregistrer</button></div>
-   <div class="list">${l.length?l.map(s=>`<div class="item" style="cursor:default"><span class="n">${esc(s.name)}${s.anim?' <span class="pill">animé</span>':''}</span><span class="t">${esc(s.date||'')}</span><button class="btn sm" data-hbo="${s.id}">Ouvrir</button><button class="btn sm danger" data-hbd="${s.id}" aria-label="Supprimer ${esc(s.name)}">✕</button></div>`).join(''):'<p class="muted">Aucun tableau enregistré. Dessinez, puis donnez-lui un nom.</p>'}</div>
+  p.innerHTML=`<div class="row" style="justify-content:space-between"><b class="h">Tableaux enregistrés (brouillons)</b><button class="btn sm" id="hbPopX" aria-label="Fermer">✕</button></div>
+   <div class="row" style="flex-wrap:nowrap"><input class="inp" id="hbName" placeholder="Nom (ex. Sortie de zone vs 2-1-2)" maxlength="60"><button class="btn sm" id="hbSaveGo">Enregistrer</button></div>
+   <div class="hb-tolib"><p class="muted">Un tableau enregistré reste ici. Pour le retrouver dans la <b>librairie (Drills ou Skills)</b>, ajoutez-le avec sa fiche :</p>
+   <div class="row"><button class="btn sm primary" data-hbl="skills">+ Ajouter aux Skills</button><button class="btn sm primary" data-hbl="drills">+ Ajouter aux Drills</button></div></div>
+   <div class="list">${l.length?l.map(s=>`<div class="item" style="cursor:default"><span class="n">${esc(s.name)}${s.anim?' <span class="pill">animé</span>':''}</span><span class="t">${esc(s.date||'')}</span><button class="btn sm" data-hbo="${s.id}">Ouvrir</button><button class="btn sm" data-hbol="${s.id}" title="Ouvrir et ajouter à la librairie">→ Librairie</button><button class="btn sm danger" data-hbd="${s.id}" aria-label="Supprimer ${esc(s.name)}">✕</button></div>`).join(''):'<p class="muted">Aucun tableau enregistré. Dessinez, puis donnez-lui un nom.</p>'}</div>
    <button class="btn sm" id="hbNew">Nouveau tableau vide</button>`;
   $('#hbPopX').onclick=()=>p.hidden=true;
   const save=()=>{const name=$('#hbName').value.trim();if(!name)return toast('Donnez un nom au tableau');if(!HB.items.length)return toast('Le tableau est vide');
@@ -2064,6 +2075,8 @@ function hbSavesRender(){const l=hbList();const p=$('#hbPop');
   $('#hbSaveGo').onclick=save;$('#hbName').addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter')save()});
   $$('[data-hbo]',p).forEach(b=>b.onclick=()=>{const s=hbList().find(x=>x.id===b.dataset.hbo);if(!s)return;hbSnap();hbLoad(s);hbChanged();p.hidden=true;toast('Tableau ouvert : '+s.name)});
   $$('[data-hbd]',p).forEach(b=>b.onclick=()=>armConfirm(b,()=>{hbStore(hbList().filter(x=>x.id!==b.dataset.hbd));hbSavesRender()},'?'));
+  $$('[data-hbl]',p).forEach(b=>b.onclick=()=>{p.hidden=true;crFromBoard($('#hbName').value.trim(),b.dataset.hbl)});
+  $$('[data-hbol]',p).forEach(b=>b.onclick=()=>{const s=hbList().find(x=>x.id===b.dataset.hbol);if(!s)return;hbSnap();hbLoad(s);hbChanged();p.hidden=true;crFromBoard(s.name,'skills')});
   $('#hbNew').onclick=()=>{if(HB.items.length){hbSnap();HB.items=[];HB.anim=null;HB.step=0;HB.editing=null;hbChanged()}p.hidden=true}}
 /* ---------- plein écran (banc, tablette) ---------- */
 function hbFull(on){$('#app').classList.toggle('hb-full',on);
@@ -2098,7 +2111,7 @@ function crFill(def){const f=$('#crForm');const v=(n,x)=>{f.elements[n].value=x|
   v('title',def&&def.title);v('lib',def?def.lib:'drills');v('cat',def?def.cat:'collectif');f.elements.tag5.checked=!!(def&&def.tag==='5c4');v('dur',def?def.dur:'8 min');v('sub',def&&def.sub);
   v('org',def&&def.org);v('steps',def&&(def.steps||[]).join('\n'));v('points',def&&(def.points||[]).join('\n'));v('errs',def&&(def.errs||[]).join('\n'));v('prog',def&&def.prog);v('mat',def&&def.mat);
   v('yt',def&&def.vids&&def.vids[0]?'https://www.youtube.com/watch?v='+def.vids[0].id:'');v('ys',def&&def.clip?def.clip.start:'');v('ye',def&&def.clip?def.clip.end:'');
-  $('#crMode').textContent=def?'Modification : '+def.title:'Nouvel exercice'}
+  $('#crMode').textContent=def?'Modification : '+def.title:'Nouvel exercice';const sv=$('#crSaved');if(sv&&!def)sv.hidden=true}
 function crSave(e){e.preventDefault();const f=$('#crForm'),g=n=>f.elements[n].value.trim();
   if(!g('title'))return toast('Donnez un titre à l\'exercice');if(!hbToks().length)return toast('Dessinez d\'abord l\'exercice sur le tableau');
   if(!HB.half)return toast('Passez le tableau en demi-glace pour enregistrer l\'exercice');
@@ -2110,6 +2123,8 @@ function crSave(e){e.preventDefault();const f=$('#crForm'),g=n=>f.elements[n].va
   if(yid){def.vids=[{id:yid,title:'Vidéo de référence',by:'YouTube'}];if(isFinite(ys)&&isFinite(ye)&&ye>ys)def.clip={id:yid,start:Math.round(ys),end:Math.round(ye),by:'YouTube'}}
   const i=MES.defs.findIndex(x=>x.id===id);if(i>=0)MES.defs[i]=def;else MES.defs.unshift(def);
   if(!mesStore())return;mesSync();HB.editing={id,title:def.title};crFill(def);crList();hbAnimUI();
+  const ok=$('#crSaved');ok.hidden=false;ok.innerHTML=`<span>Enregistré dans la librairie, section <b>${def.lib==='skills'?'Skills':'Drills'}</b>.</span><button class="btn sm" type="button" id="crSeeLib">Voir dans la librairie</button>`;
+  $('#crSeeLib').onclick=()=>{LIB.tab=def.lib==='skills'?'skills':'drills';LIB.cat='';LIB.q='';setMode('lib')};
   toast(`Exercice enregistré dans la librairie (${def.lib==='skills'?'Skills':'Drills'})`)}
 function crList(){const box=$('#crMine');if(!box)return;
   box.innerHTML=MES.defs.length?MES.defs.map(d=>`<div class="item cr-item"><span class="dot" style="background:${TR_CAT[d.cat][1]}"></span><span class="n">${esc(d.title)}</span><span class="pill">${d.lib==='skills'?'Skill':'Drill'}</span>
@@ -2120,6 +2135,10 @@ function crList(){const box=$('#crMine');if(!box)return;
   $$('[data-cro]',box).forEach(b=>b.onclick=()=>libOpen(b.dataset.cro,PRATIQUES.indexOf(MES.C)));
   $$('[data-crd]',box).forEach(b=>b.onclick=()=>armConfirm(b,()=>{MES.defs=MES.defs.filter(x=>x.id!==b.dataset.crd);mesStore();mesSync();
     if(HB.editing&&HB.editing.id===b.dataset.crd){HB.editing=null;crFill(null)}if(TR_BYID[TR.di]==null||!PRATIQUES[TR.pi].items.some(x=>x.id===TR.di)){TR.pi=0;TR.di=trItems(PRATIQUES[0]).find(x=>!x.pause).id}crList()},'?'))}
+function crFromBoard(title,lib){if(!hbToks().length&&!HB.items.length)return toast('Le tableau est vide : dessinez d\'abord l\'exercice');
+  HB.editing=null;crFill(null);const f=$('#crForm');if(title)f.elements.title.value=title;if(lib){f.elements.lib.value=lib;if(lib==='skills')f.elements.cat.value='patin'}hbAnimUI();setMode('create');
+  setTimeout(()=>{const t=$('#crTitle');t.focus();t.scrollIntoView({block:'center'})},60);
+  toast(HB.half?'Complétez la fiche, puis « Enregistrer dans la librairie »':'Passez le tableau en demi-glace avant d\'enregistrer')}
 function crRender(){crPreview();crList()}
 function crInit(){mesLoad();mesSync();
   $('#crForm').addEventListener('submit',crSave);$('#crToBoard').onclick=()=>setMode('home');
@@ -2156,10 +2175,10 @@ function libRender(){const all=libItems();const q=LIB.q.toLowerCase();const isS=
     ${isS?`<p class="muted">Exercices axés sur la technique individuelle, créés manuellement.</p>`:`<p class="muted">${pool.length} exercices · ouvrez la fiche, placez le schéma sur le tableau ou regardez la vidéo.</p>`}
     ${pool.length?`<div class="chips">${LIB_CHIPS.filter(([k])=>!k||pool.some(({d})=>k.startsWith('tag:')?d.tag===k.slice(4):d.cat===k)).map(([k,n])=>`<button class="chip${LIB.cat===k?' active':''}" data-libc="${k}">${esc(n)}</button>`).join('')}</div>`:''}
     ${pool.length?`<div class="lib-grid">${list.map(libCard).join('')||'<p class="muted">Aucun exercice pour ce filtre.</p>'}</div>`
-      :`<div class="lib-empty"><h3>Aucun skill pour l'instant</h3><p>Les exercices techniques que tu créeras avec l'outil Création apparaîtront ici : maniement, tir, patin, feintes. Chacun aura son schéma, ses consignes et sa vidéo.</p><button class="btn primary" id="libToCreate">Ouvrir Création</button></div>`}</div>`;
+      :`<div class="lib-empty"><h3>Aucun skill pour l'instant</h3><p>Dessine l'exercice sur le tableau, puis ajoute-le ici avec sa fiche (bouton ci-dessous, ou « + Ajouter aux Skills » dans les tableaux enregistrés). Maniement, tir, patin, feintes : chacun aura son schéma, ses consignes et sa vidéo.</p><button class="btn primary" id="libToCreate">Ajouter le tableau actuel aux Skills</button></div>`}</div>`;
   const qi=$('#libQ');if(qi)qi.oninput=e=>{LIB.q=e.target.value;const pos=e.target.selectionStart;libRender();const n=$('#libQ');n.focus();n.setSelectionRange(pos,pos)};
   $$('[data-libt]',v).forEach(b=>b.onclick=()=>{if(LIB.tab===b.dataset.libt)return;LIB.tab=b.dataset.libt;LIB.cat='';LIB.q='';libRender()});
-  const tc=$('#libToCreate');if(tc)tc.onclick=()=>setMode('create');
+  const tc=$('#libToCreate');if(tc)tc.onclick=()=>{if(hbToks().length||HB.items.length)crFromBoard('','skills');else{setMode('create');$('#crForm').elements.lib.value='skills'}};
   $$('[data-libc]',v).forEach(b=>b.onclick=()=>{LIB.cat=b.dataset.libc;libRender()});
   $$('[data-libo]',v).forEach(b=>b.onclick=()=>libOpen(b.dataset.libo,+b.dataset.pi));
   $$('[data-libb]',v).forEach(b=>b.onclick=()=>libToBoard(TR_BYID[b.dataset.libb]));
