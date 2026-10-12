@@ -449,6 +449,24 @@ button{cursor:pointer}
 @media (prefers-reduced-motion: reduce){.lib-thumb canvas,.lib-go{transition:none}}
 .tr-ytadd{margin-top:2px}
 .tr-ytadd .btn{color:var(--blue)}
+
+/* synchronisation */
+.sy-btn{position:relative;margin-left:auto;flex:none;width:40px;height:36px;display:grid;place-items:center;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:var(--ink-2)}
+.sy-btn svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linejoin:round}
+.sy-btn:hover{color:var(--ink);border-color:var(--ink-2)}
+.sy-dot{position:absolute;right:5px;bottom:5px;width:9px;height:9px;border-radius:50%;background:var(--line);border:2px solid var(--surface)}
+.sy-btn[data-st="ok"] .sy-dot{background:var(--ok)}
+.sy-btn[data-st="busy"] .sy-dot{background:var(--blue);animation:sypulse 1s ease-in-out infinite}
+.sy-btn[data-st="offline"] .sy-dot,.sy-btn[data-st="out"] .sy-dot{background:var(--warn)}
+.sy-btn[data-st="err"] .sy-dot{background:var(--goal)}
+@keyframes sypulse{50%{opacity:.35}}
+@media (prefers-reduced-motion: reduce){.sy-btn[data-st="busy"] .sy-dot{animation:none}}
+.sy-card{width:min(520px,100%)}
+.sy-body{padding:14px;display:flex;flex-direction:column;gap:10px}
+.sy-body p{margin:0;line-height:1.45}
+.sy-err{color:var(--goal)}
+#app:not(.video) .actions{margin-left:0}
+@media (max-width:860px){.sy-btn{margin-left:auto;order:1}}
 </style>
 </head>
 <body>
@@ -459,6 +477,7 @@ button{cursor:pointer}
       <span class="bt"><b>Banc vidéo</b><span>Tableau de l'entraîneur</span></span>
     </button>
     <nav class="mainnav" aria-label="Sections"><button data-mode="train" id="modeTrain">Entraînements</button><button data-mode="video" id="modeVid">Sessions vidéo</button><button data-mode="lib">Librairie de drills</button><button data-mode="create">Création</button></nav>
+    <button class="sy-btn" id="syBtn" data-st="off" title="Synchronisation" aria-label="Synchronisation"><svg viewBox="0 0 24 24"><path d="M7 18h10a4 4 0 0 0 .6-7.96A6 6 0 0 0 6.1 9.2 4.5 4.5 0 0 0 7 18z"/></svg><i class="sy-dot"></i></button>
     <input id="projName" class="projname" aria-label="Nom du projet" autocomplete="off">
     <div class="actions">
       <span class="btn primary filebtn vidonly"><svg viewBox="0 0 24 24"><path d="M4 7h11v10H4zM15 10l5-3v10l-5-3"/></svg><span class="tx">Ouvrir une vidéo</span><input type="file" class="fileov vidin" id="fileVid" accept="video/*,.mp4,.mov,.m4v,.webm" multiple aria-label="Ouvrir une vidéo"></span>
@@ -599,6 +618,7 @@ button{cursor:pointer}
   </section>
   <section id="libView" aria-label="Librairie de drills"></section>
   <div class="lm-back" id="libModal" hidden></div>
+  <div class="lm-back" id="syModal" hidden></div>
   <section id="createView" aria-label="Création d'exercices">
     <div class="lib-wrap cr-wrap">
       <div class="lib-head"><div><h2 class="lib-title">Création d'exercices</h2><p class="muted" id="crMode">Nouvel exercice</p></div><button class="btn" id="crNew">Nouvel exercice</button></div>
@@ -1630,7 +1650,7 @@ function trPartial(m,f){if(f>=1)return m.dense;const r=trAt(m,f);return m.dense.
 const TR={pi:0,di:null,t:0,playing:false,speed:1,last:0,rest:true,tool:null,color:'#FFD23F',draft:null,R:null,raf:0,textAt:null};
 let TRS={notes:{},annots:{},meta:{},plans:{},vids:{}};
 function trLoad(){try{const o=JSON.parse(localStorage.getItem('bvh:entrainements')||'null');if(o&&typeof o==='object')TRS=Object.assign(TRS,o)}catch(e){}}
-let trSaveT;function trSave(){clearTimeout(trSaveT);trSaveT=setTimeout(()=>{try{localStorage.setItem('bvh:entrainements',JSON.stringify(TRS))}catch(e){toast('Sauvegarde des notes impossible sur cet appareil')}},400)}
+let trSaveT;function trSave(){clearTimeout(trSaveT);trSaveT=setTimeout(()=>{try{localStorage.setItem('bvh:entrainements',JSON.stringify(TRS))}catch(e){toast('Sauvegarde des notes impossible sur cet appareil')}syncSoon()},400)}
 const trPrat=()=>PRATIQUES[TR.pi];
 const trDrill=()=>trItems(trPrat()).find(d=>d.id===TR.di);
 /* plan modifiable des pratiques (ordre, durées, exercices ajoutés de la banque) */
@@ -2153,7 +2173,7 @@ function hbBuildBar(){const ib=(id,t,ico,extra='')=>`<button class="tool" ${extr
 
 /* ---------- tableaux enregistrés ---------- */
 const hbList=()=>{try{return JSON.parse(localStorage.getItem('bvh:tableaux')||'[]')}catch(e){return[]}};
-const hbStore=l=>{try{localStorage.setItem('bvh:tableaux',JSON.stringify(l))}catch(e){toast('Enregistrement impossible sur cet appareil')}};
+const hbStore=l=>{try{localStorage.setItem('bvh:tableaux',JSON.stringify(l));syncSoon()}catch(e){toast('Enregistrement impossible sur cet appareil')}};
 function hbSavesToggle(){const p=$('#hbPop');if(!p.hidden){p.hidden=true;return}hbSavesRender();p.hidden=false;setTimeout(()=>{const n=$('#hbName');n&&n.focus()},30)}
 function hbSavesRender(){const l=hbList();const p=$('#hbPop');
   p.innerHTML=`<div class="row" style="justify-content:space-between"><b class="h">Tableaux enregistrés (brouillons)</b><button class="btn sm" id="hbPopX" aria-label="Fermer">✕</button></div>
@@ -2183,7 +2203,7 @@ document.addEventListener('fullscreenchange',()=>{if(!document.fullscreenElement
 const MES={defs:[],C:{id:'mes',kind:'banque',name:'Mes exercices',theme:"Exercices créés sur le tableau",groupe:'M17 B',glace:'Demi-glace',
   objectifs:"Exercices créés avec l'outil Création. Pour les modifier : onglet Création, Mes exercices.",items:[]}};
 function mesLoad(){try{const l=JSON.parse(localStorage.getItem('bvh:mesdrills')||'[]');MES.defs=Array.isArray(l)?l:[]}catch(e){MES.defs=[]}}
-function mesStore(){try{localStorage.setItem('bvh:mesdrills',JSON.stringify(MES.defs));return true}catch(e){toast('Enregistrement impossible : espace plein sur cet appareil');return false}}
+function mesStore(){try{localStorage.setItem('bvh:mesdrills',JSON.stringify(MES.defs));syncSoon();return true}catch(e){toast('Enregistrement impossible : espace plein sur cet appareil');return false}}
 function mesSync(){MES.C.items.length=0;MES.defs.forEach(def=>{const d=clone(def);trPrep(d);MES.C.items.push(d);TR_BYID[d.id]=d});
   const i=PRATIQUES.indexOf(MES.C);if(MES.defs.length&&i<0)PRATIQUES.push(MES.C);if(!MES.defs.length&&i>=0){PRATIQUES.splice(i,1);if(TR.pi>=PRATIQUES.length)TR.pi=0}}
 const crF=p=>[+((100-p[0])*6.1).toFixed(1),+(p[1]*520/85).toFixed(1)];/* pieds (demi-glace) → repère des fiches */
@@ -2351,6 +2371,97 @@ function hbInit(){
   new ResizeObserver(()=>hbRender()).observe($('#hbStage'));
   setMode('home');if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>hbRender())}
 
+
+/* ================= synchronisation entre appareils (Supabase, sans bibliothèque) =================
+   Données synchronisées : notes/annotations/pratiques modifiées/vidéos ajoutées (TRS), Mes exercices, tableaux enregistrés.
+   Fusion à trois voies avec la dernière version synchronisée (bvh:syncbase) : les ajouts des deux appareils sont gardés,
+   les suppressions sont respectées, et en cas de modification des deux côtés, l'appareil qui synchronise l'emporte. */
+const SY={cfg:null,busy:false,again:false,t:null,state:'off',last:null,err:'',email:''};
+function syLoad(){try{SY.cfg=JSON.parse(localStorage.getItem('bvh:sync')||'null')}catch(e){SY.cfg=null}try{SY.last=+localStorage.getItem('bvh:synclast')||null}catch(e){}}
+function sySave(){try{localStorage.setItem('bvh:sync',JSON.stringify(SY.cfg))}catch(e){}}
+const syCfgOk=()=>!!(SY.cfg&&SY.cfg.url&&SY.cfg.key);
+const syOn=()=>!!(syCfgOk()&&SY.cfg.session);
+const syBase=()=>SY.cfg.url.replace(/\/+$/,'');
+async function syFetch(path,opt={},auth=true){const h=Object.assign({apikey:SY.cfg.key,'Content-Type':'application/json'},opt.headers||{});
+  if(auth){await syRefresh();h.Authorization='Bearer '+SY.cfg.session.access_token}
+  let r;try{r=await fetch(syBase()+path,Object.assign({},opt,{headers:h,cache:'no-store'}))}catch(e){const er=new Error('Serveur injoignable (réseau ou adresse du projet)');er.net=true;throw er}
+  if(!r.ok){let m='';try{const j=await r.json();m=j.msg||j.message||j.error_description||j.error||''}catch(e){}const er=new Error(m||('Erreur '+r.status));er.status=r.status;throw er}
+  const t=await r.text();return t?JSON.parse(t):null}
+function syKeep(j){if(!j||!j.access_token)throw new Error('Réponse de connexion invalide');
+  SY.cfg.session={access_token:j.access_token,refresh_token:j.refresh_token,expires_at:j.expires_at||Math.floor(Date.now()/1000)+(j.expires_in||3600),user:{id:j.user.id,email:j.user.email}};sySave()}
+async function syRefresh(){const s=SY.cfg.session;if(!s)throw new Error('Non connecté');if(s.expires_at&&s.expires_at-90>Date.now()/1000)return;
+  try{syKeep(await syFetch('/auth/v1/token?grant_type=refresh_token',{method:'POST',body:JSON.stringify({refresh_token:s.refresh_token})},false))}
+  catch(e){if(!e.net){SY.cfg.session=null;sySave();syUI()}throw e}}
+/* données locales sous forme de dictionnaires par identifiant */
+function syLocal(){const T=TRS||{};return{trs:{notes:T.notes||{},annots:T.annots||{},meta:T.meta||{},plans:T.plans||{},vids:T.vids||{}},
+  mes:Object.fromEntries(MES.defs.map(d=>[d.id,d])),tab:Object.fromEntries(hbList().map(t=>[t.id,t]))}}
+const syEq=(a,b)=>JSON.stringify(a)===JSON.stringify(b);
+function syM3(b,l,r){b=b||{};l=l||{};r=r||{};const o={};new Set([...Object.keys(l),...Object.keys(r),...Object.keys(b)]).forEach(k=>{const v=syEq(l[k],b[k])?r[k]:l[k];if(v!==undefined)o[k]=v});return o}
+const SY_TRS=['notes','annots','meta','plans','vids'];
+function syMerge(B,L,R){const M={trs:{},mes:syM3(B.mes,L.mes,R.mes),tab:syM3(B.tab,L.tab,R.tab)};SY_TRS.forEach(k=>M.trs[k]=syM3((B.trs||{})[k],L.trs[k],(R.trs||{})[k]));return M}
+function syApply(M){TRS=Object.assign({notes:{},annots:{},meta:{},plans:{},vids:{}},M.trs);try{localStorage.setItem('bvh:entrainements',JSON.stringify(TRS))}catch(e){}
+  MES.defs=Object.values(M.mes||{});try{localStorage.setItem('bvh:mesdrills',JSON.stringify(MES.defs))}catch(e){}mesSync();
+  try{localStorage.setItem('bvh:tableaux',JSON.stringify(Object.values(M.tab||{})))}catch(e){}
+  if(!PRATIQUES[TR.pi])TR.pi=0;if(!trItems(trPrat()).some(d=>d.id===TR.di))TR.di=trItems(trPrat()).find(d=>!d.pause).id;
+  if(MODE==='train'){trRenderList();trDetail();trRender()}if(MODE==='lib')libRender();if(MODE==='create')crRender();
+  const pop=$('#hbPop');if(pop&&!pop.hidden)hbSavesRender()}
+async function syncNow(manual){if(!syOn())return;if(SY.busy){SY.again=true;return}
+  if(navigator.onLine===false){syState('offline');if(manual)toast('Hors ligne : la synchronisation reprendra au retour du réseau');return}
+  SY.busy=true;syState('busy');
+  try{const rows=await syFetch('/rest/v1/bvh_data?select=data,updated_at');const remote=rows&&rows[0]&&rows[0].data?rows[0].data:{};
+    let base={};try{base=JSON.parse(localStorage.getItem('bvh:syncbase')||'{}')}catch(e){}
+    const L=syLocal(),M=syMerge(base,L,remote);
+    if(!syEq(M,L))syApply(M);
+    if(!syEq(M,remote))await syFetch('/rest/v1/bvh_data',{method:'POST',headers:{Prefer:'resolution=merge-duplicates,return=minimal'},
+      body:JSON.stringify({user_id:SY.cfg.session.user.id,data:M,updated_at:new Date().toISOString()})});
+    try{localStorage.setItem('bvh:syncbase',JSON.stringify(M))}catch(e){}SY.last=Date.now();try{localStorage.setItem('bvh:synclast',SY.last)}catch(e){}
+    syState('ok');if(manual)toast('Synchronisé : '+Object.keys(M.mes).length+' exercice(s), '+Object.keys(M.tab).length+' tableau(x)')}
+  catch(e){syState(e.net?'offline':'err',e.message);if(manual||e.status===401||e.status===404)toast('Synchronisation : '+(e.status===404?'table bvh_data introuvable (voir le guide)':e.message))}
+  finally{SY.busy=false;if(SY.again){SY.again=false;syncSoon()}}}
+function syncSoon(){if(!syOn())return;if(SY.busy){SY.again=true;return}clearTimeout(SY.t);SY.t=setTimeout(()=>syncNow(false),3000)}
+function syState(s,msg){SY.state=s;SY.err=msg||'';syUI()}
+const syAgo=t=>{if(!t)return'jamais';const m=Math.round((Date.now()-t)/60000);return m<1?'à l\'instant':m<60?`il y a ${m} min`:new Date(t).toLocaleString('fr-CA',{dateStyle:'short',timeStyle:'short'})};
+function syUI(){const b=$('#syBtn');if(!b)return;const st=!syCfgOk()?'off':!syOn()?'out':SY.state;
+  const lbl={off:'Synchro : non configurée',out:'Synchro : non connecté',ok:'Synchronisé '+syAgo(SY.last),busy:'Synchronisation…',offline:'Hors ligne',err:'Erreur de synchronisation'}[st]||'Synchro';
+  b.dataset.st=st;b.title=lbl;b.setAttribute('aria-label',lbl);const m=$('#syModal');if(m&&!m.hidden)syRender()}
+/* fenêtre de réglage */
+function syOpen(){const m=$('#syModal');m.hidden=false;syRender();m.onclick=e=>{if(e.target===m)syClose()}}
+function syClose(){$('#syModal').hidden=true}
+function syRender(){const m=$('#syModal');const c=SY.cfg||{};let body='';
+  if(!syCfgOk()||SY.edit){body=`<p class="muted">Reliez l'app à votre projet Supabase (gratuit). Les étapes sont dans le guide du dépôt (README, section Synchronisation).</p>
+    <label class="field">Adresse du projet<input class="inp" id="syUrl" placeholder="https://xxxxxxxx.supabase.co" value="${esc(c.url||'')}" autocomplete="off"></label>
+    <label class="field">Clé publique (anon ou publishable)<input class="inp" id="syKey" placeholder="eyJ… ou sb_publishable_…" value="${esc(c.key||'')}" autocomplete="off"></label>
+    <div class="row"><button class="btn primary" id="sySaveCfg">Enregistrer</button>${syCfgOk()?'<button class="btn" id="syCancel">Annuler</button>':''}</div>`}
+  else if(!syOn()){body=SY.email?`<p>Un code a été envoyé à <b>${esc(SY.email)}</b>. Entrez-le ici (vérifiez les courriels indésirables).</p>
+      <label class="field">Code reçu par courriel<input class="inp" id="syCode" inputmode="numeric" autocomplete="one-time-code" maxlength="10"></label>
+      <div class="row"><button class="btn primary" id="syVerify">Se connecter</button><button class="btn" id="syBack">Changer de courriel</button></div>`
+    :`<p>Connectez-vous avec votre courriel. Utilisez <b>le même courriel</b> sur l'ordinateur et sur l'iPad.</p>
+      <label class="field">Courriel<input class="inp" id="syEmail" type="email" autocomplete="email" placeholder="vous@exemple.com"></label>
+      <div class="row"><button class="btn primary" id="sySend">Recevoir un code</button><button class="btn" id="syEditCfg">Modifier le projet</button></div>`}
+  else{const st=SY.state;body=`<p>Connecté : <b>${esc(c.session.user.email||'')}</b></p>
+    <p class="muted">Dernière synchronisation : ${syAgo(SY.last)}${st==='err'?` · <span class="sy-err">${esc(SY.err)}</span>`:st==='offline'?' · hors ligne':''}</p>
+    <p class="muted">Synchronisés : notes et annotations, pratiques modifiées, vidéos YouTube ajoutées, Mes exercices et tableaux enregistrés. Les photos et vidéos importées restent sur chaque appareil.</p>
+    <div class="row"><button class="btn primary" id="syNow"${st==='busy'?' disabled':''}>${st==='busy'?'Synchronisation…':'Synchroniser maintenant'}</button><button class="btn danger" id="syOut">Se déconnecter</button></div>`}
+  m.innerHTML=`<div class="lm-card sy-card" role="dialog" aria-modal="true" aria-label="Synchronisation"><div class="lm-head"><b>Synchronisation entre appareils</b><button class="btn sm" id="syX">Fermer</button></div><div class="sy-body">${body}</div></div>`;
+  $('#syX').onclick=syClose;const on=(id,f)=>{const el=$('#'+id);if(el)el.onclick=f};
+  m.querySelectorAll('input').forEach(i=>i.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){const p=m.querySelector('.btn.primary');p&&p.click()}}));
+  on('sySaveCfg',()=>{const url=$('#syUrl').value.trim(),key=$('#syKey').value.trim();if(!/^https:\/\/[^ ]+$/.test(url))return toast('Adresse du projet invalide');if(key.length<20)return toast('Clé publique invalide');
+    const same=SY.cfg&&SY.cfg.url===url;SY.cfg={url,key,session:same?SY.cfg.session:null};SY.edit=false;sySave();syUI();syRender()});
+  on('syCancel',()=>{SY.edit=false;syRender()});on('syEditCfg',()=>{SY.edit=true;syRender()});
+  on('sySend',async()=>{const em=$('#syEmail').value.trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em))return toast('Courriel invalide');
+    try{await syFetch('/auth/v1/otp',{method:'POST',body:JSON.stringify({email:em,create_user:true})},false);SY.email=em;syRender();toast('Code envoyé')}catch(e){toast('Envoi du code : '+e.message)}});
+  on('syBack',()=>{SY.email='';syRender()});
+  on('syVerify',async()=>{const code=$('#syCode').value.replace(/\s/g,'');if(!code)return toast('Entrez le code reçu');
+    try{syKeep(await syFetch('/auth/v1/verify',{method:'POST',body:JSON.stringify({type:'email',email:SY.email,token:code})},false));SY.email='';syUI();syRender();toast('Connecté');syncNow(true)}
+    catch(e){toast('Code refusé : '+e.message)}});
+  on('syNow',()=>syncNow(true));
+  on('syOut',e=>armConfirm(e.currentTarget,()=>{SY.cfg.session=null;sySave();try{localStorage.removeItem('bvh:syncbase')}catch(x){}syState('off');syRender();toast('Déconnecté : les données restent sur cet appareil')},'Confirmer ?'))}
+function syInit(){syLoad();$('#syBtn').onclick=syOpen;syUI();
+  addEventListener('online',()=>syncSoon());
+  document.addEventListener('visibilitychange',()=>{if(!syOn())return;if(document.visibilityState==='visible')syncNow(false);else{clearTimeout(SY.t);syncNow(false)}});
+  setInterval(()=>{if(SY.state==='ok')syUI()},60000);
+  if(syOn())setTimeout(()=>syncNow(false),1200)}
+
 /* ================= démarrage ================= */
 (function init(){
   buildToolbar();
@@ -2359,7 +2470,7 @@ function hbInit(){
   if(P.rink.half==null)P.rink.half=true;
   setTool('skate');afterLoad();
   const s=cur();if(s){s.t=P.current==='demo'&&!loaded?3.2:s.t;S.lastT=s.t;S.selMarker=(markerAt(s.t)||{}).id||null;renderSeq()}
-  trInit();hbInit();
+  trInit();hbInit();syInit();
   requestAnimationFrame(frame);
   if(document.fonts&&document.fonts.ready)document.fonts.ready.then(()=>drawRinkPanel());
 })();

@@ -29,3 +29,31 @@ Pour passer d'un appareil à l'autre : *Entraînements → Exporter / Importer* 
 ## Mises à jour
 
 Chaque modification poussée sur `main` est publiée par GitHub Pages en 1 à 2 minutes. Les appareils reçoivent la nouvelle version à la réouverture de l'app.
+
+## Synchronisation entre appareils (Supabase)
+
+L'app peut synchroniser notes, annotations, pratiques modifiées, vidéos YouTube ajoutées, Mes exercices et tableaux enregistrés entre vos appareils. Les photos et vidéos importées restent sur chaque appareil.
+
+### 1. Créer le projet (une fois)
+1. Créer un compte gratuit sur https://supabase.com, puis **New project** (région : Canada Central). Notez le mot de passe de la base, il ne sert pas dans l'app.
+2. **SQL Editor** → **New query** → coller puis **Run** :
+
+```sql
+create table public.bvh_data (
+  user_id uuid primary key default auth.uid() references auth.users on delete cascade,
+  data jsonb not null,
+  updated_at timestamptz not null default now()
+);
+alter table public.bvh_data enable row level security;
+create policy "lire ses données" on public.bvh_data for select using (auth.uid() = user_id);
+create policy "créer ses données" on public.bvh_data for insert with check (auth.uid() = user_id);
+create policy "modifier ses données" on public.bvh_data for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
+```
+
+3. **Authentication** → **Emails** (ou Email Templates) → modèle **Magic Link** : ajouter la ligne `Votre code : {{ .Token }}` dans le message, puis **Save**. L'app se connecte avec ce code (le lien du courriel ne sert pas).
+4. **Project Settings** → **API** (ou **Data API** / **API Keys**) : copier l'**URL du projet** (`https://xxxx.supabase.co`) et la **clé publique** (`anon` ou `publishable`). Ne jamais utiliser la clé `service_role` / `secret`.
+
+### 2. Relier chaque appareil
+Dans l'app : icône **nuage** en haut à droite → coller l'URL et la clé → **Enregistrer** → courriel → **Recevoir un code** → entrer le code → **Se connecter**. Utiliser le même courriel sur tous les appareils.
+
+La synchronisation se fait seule : à l'ouverture de l'app, quelques secondes après chaque modification et quand l'app passe en arrière-plan. Le point du nuage indique l'état (vert = à jour, bleu = en cours, orange = hors ligne ou déconnecté, rouge = erreur).
