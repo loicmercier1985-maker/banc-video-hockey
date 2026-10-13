@@ -50,10 +50,10 @@ create policy "créer ses données" on public.bvh_data for insert with check (au
 create policy "modifier ses données" on public.bvh_data for update using (auth.uid() = user_id) with check (auth.uid() = user_id);
 ```
 
-3. **Authentication** → **Emails** (ou Email Templates) → modèle **Magic Link** : ajouter la ligne `Votre code : {{ .Token }}` dans le message, puis **Save**. L'app se connecte avec ce code (le lien du courriel ne sert pas).
+3. **Authentication** → **URL Configuration** : mettre **Site URL** = `https://loicmercier1985-maker.github.io/banc-video-hockey/` et ajouter la même adresse dans **Redirect URLs**, puis **Save**. Le lien reçu par courriel ramène ainsi dans l'app. (Les modèles de courriel n'ont pas à être modifiés.)
 4. **Project Settings** → **API** (ou **Data API** / **API Keys**) : copier l'**URL du projet** (`https://xxxx.supabase.co`) et la **clé publique** (`anon` ou `publishable`). Ne jamais utiliser la clé `service_role` / `secret`.
 
 ### 2. Relier chaque appareil
-Dans l'app : icône **nuage** en haut à droite → coller l'URL et la clé → **Enregistrer** → courriel → **Recevoir un code** → entrer le code → **Se connecter**. Utiliser le même courriel sur tous les appareils.
+Dans l'app : icône **nuage** en haut à droite → coller l'URL et la clé → **Enregistrer** → courriel → **Recevoir le lien** → toucher le lien du courriel (ou, sur iPad, appui long sur le lien → Copier le lien, puis le coller dans l'app et **Se connecter**). Utiliser le même courriel sur tous les appareils.
 
 La synchronisation se fait seule : à l'ouverture de l'app, quelques secondes après chaque modification et quand l'app passe en arrière-plan. Le point du nuage indique l'état (vert = à jour, bleu = en cours, orange = hors ligne ou déconnecté, rouge = erreur).

@@ -467,6 +467,7 @@ button{cursor:pointer}
 .sy-err{color:var(--goal)}
 #app:not(.video) .actions{margin-left:0}
 @media (max-width:860px){.sy-btn{margin-left:auto;order:1}}
+.sy-how{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:4px;font-size:13.5px;line-height:1.4}
 </style>
 </head>
 <body>
@@ -2432,12 +2433,14 @@ function syRender(){const m=$('#syModal');const c=SY.cfg||{};let body='';
     <label class="field">Adresse du projet<input class="inp" id="syUrl" placeholder="https://xxxxxxxx.supabase.co" value="${esc(c.url||'')}" autocomplete="off"></label>
     <label class="field">Clé publique (anon ou publishable)<input class="inp" id="syKey" placeholder="eyJ… ou sb_publishable_…" value="${esc(c.key||'')}" autocomplete="off"></label>
     <div class="row"><button class="btn primary" id="sySaveCfg">Enregistrer</button>${syCfgOk()?'<button class="btn" id="syCancel">Annuler</button>':''}</div>`}
-  else if(!syOn()){body=SY.email?`<p>Un code a été envoyé à <b>${esc(SY.email)}</b>. Entrez-le ici (vérifiez les courriels indésirables).</p>
-      <label class="field">Code reçu par courriel<input class="inp" id="syCode" inputmode="numeric" autocomplete="one-time-code" maxlength="10"></label>
+  else if(!syOn()){body=SY.email?`<p>Un courriel a été envoyé à <b>${esc(SY.email)}</b> (vérifiez les indésirables).</p>
+      <ul class="sy-how"><li><b>Sur cet appareil :</b> touchez le lien du courriel; l'app se connecte d'elle-même.</li>
+      <li><b>Sur iPad ou si ça ne marche pas :</b> sans l'ouvrir, faites un appui long sur le lien (ou clic droit) → <b>Copier le lien</b>, puis collez-le ici.</li></ul>
+      <label class="field">Lien (ou code) reçu par courriel<input class="inp" id="syCode" autocomplete="one-time-code" placeholder="https://….supabase.co/auth/v1/verify?token=…"></label>
       <div class="row"><button class="btn primary" id="syVerify">Se connecter</button><button class="btn" id="syBack">Changer de courriel</button></div>`
-    :`<p>Connectez-vous avec votre courriel. Utilisez <b>le même courriel</b> sur l'ordinateur et sur l'iPad.</p>
+    :`<p>Connectez-vous avec votre courriel. Utilisez <b>le même courriel</b> sur l'ordinateur et sur l'iPad.</p><p class="muted">Vous recevrez un courriel avec un lien de connexion.</p>
       <label class="field">Courriel<input class="inp" id="syEmail" type="email" autocomplete="email" placeholder="vous@exemple.com"></label>
-      <div class="row"><button class="btn primary" id="sySend">Recevoir un code</button><button class="btn" id="syEditCfg">Modifier le projet</button></div>`}
+      <div class="row"><button class="btn primary" id="sySend">Recevoir le lien</button><button class="btn" id="syEditCfg">Modifier le projet</button></div>`}
   else{const st=SY.state;body=`<p>Connecté : <b>${esc(c.session.user.email||'')}</b></p>
     <p class="muted">Dernière synchronisation : ${syAgo(SY.last)}${st==='err'?` · <span class="sy-err">${esc(SY.err)}</span>`:st==='offline'?' · hors ligne':''}</p>
     <p class="muted">Synchronisés : notes et annotations, pratiques modifiées, vidéos YouTube ajoutées, Mes exercices et tableaux enregistrés. Les photos et vidéos importées restent sur chaque appareil.</p>
@@ -2446,20 +2449,41 @@ function syRender(){const m=$('#syModal');const c=SY.cfg||{};let body='';
   $('#syX').onclick=syClose;const on=(id,f)=>{const el=$('#'+id);if(el)el.onclick=f};
   m.querySelectorAll('input').forEach(i=>i.addEventListener('keydown',e=>{e.stopPropagation();if(e.key==='Enter'){const p=m.querySelector('.btn.primary');p&&p.click()}}));
   on('sySaveCfg',()=>{const url=$('#syUrl').value.trim(),key=$('#syKey').value.trim();if(!/^https:\/\/[^ ]+$/.test(url))return toast('Adresse du projet invalide');if(key.length<20)return toast('Clé publique invalide');
-    const same=SY.cfg&&SY.cfg.url===url;SY.cfg={url,key,session:same?SY.cfg.session:null};SY.edit=false;sySave();syUI();syRender()});
+    const same=SY.cfg&&SY.cfg.url===url;SY.cfg={url,key,session:same?SY.cfg.session:null};SY.edit=false;sySave();syUI();syRender();
+    let pend=null;try{pend=JSON.parse(localStorage.getItem('bvh:syncpending')||'null')}catch(x){}if(pend&&!syOn())syFinish(pend)});
   on('syCancel',()=>{SY.edit=false;syRender()});on('syEditCfg',()=>{SY.edit=true;syRender()});
   on('sySend',async()=>{const em=$('#syEmail').value.trim();if(!/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(em))return toast('Courriel invalide');
-    try{await syFetch('/auth/v1/otp',{method:'POST',body:JSON.stringify({email:em,create_user:true})},false);SY.email=em;syRender();toast('Code envoyé')}catch(e){toast('Envoi du code : '+e.message)}});
+    try{await syFetch('/auth/v1/otp?redirect_to='+encodeURIComponent(syAppUrl()),{method:'POST',body:JSON.stringify({email:em,create_user:true})},false);SY.email=em;syRender();toast('Courriel envoyé')}catch(e){toast('Envoi du code : '+e.message)}});
   on('syBack',()=>{SY.email='';syRender()});
-  on('syVerify',async()=>{const code=$('#syCode').value.replace(/\s/g,'');if(!code)return toast('Entrez le code reçu');
-    try{syKeep(await syFetch('/auth/v1/verify',{method:'POST',body:JSON.stringify({type:'email',email:SY.email,token:code})},false));SY.email='';syUI();syRender();toast('Connecté');syncNow(true)}
-    catch(e){toast('Code refusé : '+e.message)}});
+  on('syVerify',async()=>{const v=$('#syCode').value.trim();if(!v)return toast('Collez le lien reçu par courriel');
+    try{await syVerify(v,SY.email);SY.email='';syUI();syRender();toast('Connecté');syncNow(true)}
+    catch(e){toast('Connexion refusée : '+e.message+' (demandez un nouveau courriel)')}});
   on('syNow',()=>syncNow(true));
   on('syOut',e=>armConfirm(e.currentTarget,()=>{SY.cfg.session=null;sySave();try{localStorage.removeItem('bvh:syncbase')}catch(x){}syState('off');syRender();toast('Déconnecté : les données restent sur cet appareil')},'Confirmer ?'))}
+const syAppUrl=()=>location.origin+location.pathname;
+/* lien du courriel collé (token haché) ou code à 6 chiffres */
+async function syVerify(v,email){let tok=null,typ='magiclink';
+  if(/token=/.test(v)){try{const u=new URL(v);tok=u.searchParams.get('token');typ=u.searchParams.get('type')||'magiclink'}catch(e){const m=v.match(/token=([^&\s]+)/);tok=m&&decodeURIComponent(m[1])}}
+  if(tok){let last;for(const t of [typ,'email','magiclink']){try{syKeep(await syFetch('/auth/v1/verify',{method:'POST',body:JSON.stringify({type:t,token_hash:tok})},false));return}catch(e){last=e}}throw last}
+  const code=v.replace(/\s/g,'');if(!/^\d{6,10}$/.test(code))throw new Error('lien ou code non reconnu');
+  syKeep(await syFetch('/auth/v1/verify',{method:'POST',body:JSON.stringify({type:'email',email,token:code})},false))}
+/* retour du lien cliqué : #access_token=…&refresh_token=… */
+async function syFromHash(){const h=location.hash||'';if(!/access_token=|error_description=/.test(h))return;
+  const q=new URLSearchParams(h.slice(1));try{history.replaceState(null,'',location.pathname+location.search)}catch(e){}
+  if(q.get('error_description')){toast('Lien de connexion : '+q.get('error_description').replace(/\+/g,' '));return}
+  const pend={access_token:q.get('access_token'),refresh_token:q.get('refresh_token'),expires_at:+q.get('expires_at')||Math.floor(Date.now()/1000)+(+q.get('expires_in')||3600)};
+  if(!syCfgOk()){try{localStorage.setItem('bvh:syncpending',JSON.stringify(pend))}catch(e){}syOpen();toast('Entrez l\'adresse et la clé du projet pour terminer la connexion');return}
+  await syFinish(pend)}
+async function syFinish(pend){try{const u=await (await fetch(syBase()+'/auth/v1/user',{headers:{apikey:SY.cfg.key,Authorization:'Bearer '+pend.access_token}})).json();
+    if(!u||!u.id)throw new Error(u&&(u.msg||u.message)||'utilisateur introuvable');
+    SY.cfg.session={access_token:pend.access_token,refresh_token:pend.refresh_token,expires_at:pend.expires_at,user:{id:u.id,email:u.email}};sySave();
+    try{localStorage.removeItem('bvh:syncpending')}catch(e){}SY.email='';syUI();toast('Connecté : '+u.email);syncNow(true)}
+  catch(e){toast('Connexion par lien : '+e.message)}}
 function syInit(){syLoad();$('#syBtn').onclick=syOpen;syUI();
   addEventListener('online',()=>syncSoon());
   document.addEventListener('visibilitychange',()=>{if(!syOn())return;if(document.visibilityState==='visible')syncNow(false);else{clearTimeout(SY.t);syncNow(false)}});
   setInterval(()=>{if(SY.state==='ok')syUI()},60000);
+  syFromHash();addEventListener('hashchange',()=>{syLoad();syFromHash()});
   if(syOn())setTimeout(()=>syncNow(false),1200)}
 
 /* ================= démarrage ================= */
